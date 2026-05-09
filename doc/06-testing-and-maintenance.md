@@ -23,6 +23,7 @@ The current test suite covers:
 - method rename planning and AST application against a real `member-graph` build.
 - property rename planning and AST application against a real `member-graph` build.
 - class-constant rename planning and AST application against a real `member-graph` build.
+- function rename planning and AST application against a real `member-graph` build.
 
 ## Testing Direction
 
@@ -36,6 +37,8 @@ Priority cases:
 - direct property fetch;
 - direct class-constant declaration;
 - direct class-constant fetch;
+- direct function declaration;
+- direct function call;
 - parent and child method declarations;
 - trait method declaration;
 - interface method declaration;

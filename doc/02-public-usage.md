@@ -97,4 +97,22 @@ $result = $renamer->renameClassConstant(
 
 The class-constant planner uses `member-graph` source-node matches only. The applier supports class-constant declarations, enum-case declarations, and class-constant fetches.
 
+## Plan And Apply A Function Rename
+
+Function rename uses the fully-qualified current function name and a short replacement name:
+
+```php
+$plan = $renamer->planFunctionRename(
+    functionName: 'App\\send_mail',
+    newFunctionName: 'deliver_mail',
+);
+
+$result = $renamer->renameFunction(
+    functionName: 'App\\send_mail',
+    newFunctionName: 'deliver_mail',
+);
+```
+
+The first function rename slice does not move functions between namespaces and does not rewrite `use function` imports.
+
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

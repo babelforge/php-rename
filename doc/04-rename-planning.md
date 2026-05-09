@@ -54,6 +54,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The same source-of-truth rule applies.
 
+For function renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->function('App\\send_mail');
+```
+
+The first function rename slice expects a fully-qualified current function name and a short replacement function name. It does not move functions between namespaces.
+
 ## Method Rename Scope
 
 For method renaming, the default scope is semantic.
@@ -98,6 +109,8 @@ Examples:
 `MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
 
 `MemberGraphClassConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`.
+
+`MemberGraphFunctionRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`.
 
 The planner intentionally does not search source code by itself.
 

@@ -54,6 +54,11 @@ It also supports class-constant renaming for:
 - `PhpParser\Node\Expr\ClassConstFetch`;
 - `PhpParser\Node\Stmt\EnumCase`.
 
+It also supports function renaming for:
+
+- `PhpParser\Node\Stmt\Function_`;
+- `PhpParser\Node\Expr\FuncCall`.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported operation kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -91,6 +96,14 @@ parent::OLD_NAME
 ```
 
 These references are renamed only on matched class-constant declaration docblocks through the parent `ClassConst` node, or on matched enum-case docblocks.
+
+Current supported function docblock references:
+
+```php
+old_function()
+```
+
+These references are renamed only on matched function declaration docblocks.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

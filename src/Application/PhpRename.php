@@ -7,15 +7,18 @@ namespace PhpNoobs\PhpRename\Application;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassConstantRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphPropertyRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\AstRenamePlanApplier;
@@ -32,6 +35,7 @@ final readonly class PhpRename
      * @param MethodRenamePlannerInterface        $methodRenamePlanner        the method rename planner
      * @param PropertyRenamePlannerInterface      $propertyRenamePlanner      the property rename planner
      * @param ClassConstantRenamePlannerInterface $classConstantRenamePlanner the class-constant rename planner
+     * @param FunctionRenamePlannerInterface      $functionRenamePlanner      the function rename planner
      * @param RenamePlanApplierInterface          $renamePlanApplier          the rename plan applier
      */
     private function __construct(
@@ -39,6 +43,7 @@ final readonly class PhpRename
         private MethodRenamePlannerInterface $methodRenamePlanner,
         private PropertyRenamePlannerInterface $propertyRenamePlanner,
         private ClassConstantRenamePlannerInterface $classConstantRenamePlanner,
+        private FunctionRenamePlannerInterface $functionRenamePlanner,
         private RenamePlanApplierInterface $renamePlanApplier,
     ) {
     }
@@ -73,6 +78,7 @@ final readonly class PhpRename
      * @param RenamePlanApplierInterface|null          $renamePlanApplier          the optional rename plan applier override
      * @param PropertyRenamePlannerInterface|null      $propertyRenamePlanner      the optional property rename planner override
      * @param ClassConstantRenamePlannerInterface|null $classConstantRenamePlanner the optional class-constant rename planner override
+     * @param FunctionRenamePlannerInterface|null      $functionRenamePlanner      the optional function rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
@@ -80,12 +86,14 @@ final readonly class PhpRename
         ?RenamePlanApplierInterface $renamePlanApplier = null,
         ?PropertyRenamePlannerInterface $propertyRenamePlanner = null,
         ?ClassConstantRenamePlannerInterface $classConstantRenamePlanner = null,
+        ?FunctionRenamePlannerInterface $functionRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
             methodRenamePlanner: $methodRenamePlanner ?? new MemberGraphMethodRenamePlanner(),
             propertyRenamePlanner: $propertyRenamePlanner ?? new MemberGraphPropertyRenamePlanner(),
             classConstantRenamePlanner: $classConstantRenamePlanner ?? new MemberGraphClassConstantRenamePlanner(),
+            functionRenamePlanner: $functionRenamePlanner ?? new MemberGraphFunctionRenamePlanner(),
             renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
         );
     }
@@ -188,6 +196,38 @@ final readonly class PhpRename
     {
         return $this->renamePlanApplier->apply(
             plan: $this->planClassConstantRename($className, $constantName, $newConstantName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic function rename.
+     *
+     * @param string $functionName    the current fully-qualified function name
+     * @param string $newFunctionName the replacement short function name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planFunctionRename(string $functionName, string $newFunctionName): RenamePlan
+    {
+        return $this->functionRenamePlanner->plan(
+            request: new FunctionRenameRequest($functionName, $newFunctionName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic function rename to virtual file AST nodes.
+     *
+     * @param string $functionName    the current fully-qualified function name
+     * @param string $newFunctionName the replacement short function name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameFunction(string $functionName, string $newFunctionName): RenameResult
+    {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planFunctionRename($functionName, $newFunctionName),
             build: $this->build,
         );
     }

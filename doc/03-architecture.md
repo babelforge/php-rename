@@ -62,6 +62,8 @@ Current implementations:
 - `PropertyDocblockRenameApplier`.
 - `ClassConstantRenameNodeApplier`;
 - `ClassConstantDocblockRenameApplier`.
+- `FunctionRenameNodeApplier`;
+- `FunctionDocblockRenameApplier`.
 
 ## Design Rule
 
