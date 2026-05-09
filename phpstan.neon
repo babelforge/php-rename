@@ -5,5 +5,7 @@ parameters:
     level: max
     paths:
         - src
+        - tests
+
     tmpDir: var/cache/phpstan
     treatPhpDocTypesAsCertain: false

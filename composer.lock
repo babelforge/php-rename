@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "003f28f5e7976b63d418c6cb24586132",
+    "content-hash": "41251207c40a9afc3e8c2d346b2d737d",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -69,8 +69,14 @@
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "/Users/user/Documents/__Dev/_projets/__README/- associated-mini-projects -/PhpNoobs/member-graph",
+                "url": "https://github.com/php-noobs/member-graph.git",
                 "reference": "3a62ac4b4279239ba1fc871275271b9483822520"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/3a62ac4b4279239ba1fc871275271b9483822520",
+                "reference": "3a62ac4b4279239ba1fc871275271b9483822520",
+                "shasum": ""
             },
             "require": {
                 "nikic/php-parser": "^5.7",
@@ -120,6 +126,10 @@
             "license": [
                 "MIT"
             ],
+            "support": {
+                "source": "https://github.com/php-noobs/member-graph/tree/main",
+                "issues": "https://github.com/php-noobs/member-graph/issues"
+            },
             "time": "2026-05-09T09:21:12+00:00"
         },
         {
@@ -127,8 +137,14 @@
             "version": "dev-main",
             "source": {
                 "type": "git",
-                "url": "/Users/user/Documents/__Dev/_projets/__README/- associated-mini-projects -/PhpNoobs/php-source-registry",
+                "url": "https://github.com/php-noobs/php-source-registry.git",
                 "reference": "e0f64d2a69b708b2037abbee21333e1efa2bcd26"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/e0f64d2a69b708b2037abbee21333e1efa2bcd26",
+                "reference": "e0f64d2a69b708b2037abbee21333e1efa2bcd26",
+                "shasum": ""
             },
             "require": {
                 "nikic/php-parser": "^5.7",
@@ -153,6 +169,10 @@
             "license": [
                 "MIT"
             ],
+            "support": {
+                "source": "https://github.com/php-noobs/php-source-registry/tree/main",
+                "issues": "https://github.com/php-noobs/php-source-registry/issues"
+            },
             "time": "2026-05-07T15:51:07+00:00"
         },
         {
