@@ -42,6 +42,23 @@ It exposes:
 
 Infrastructure code can depend on external packages. Domain objects should remain simple and explicit.
 
+## Rename Application
+
+`AstRenamePlanApplier` orchestrates specialized appliers:
+
+- node appliers mutate the matched AST node;
+- metadata appliers mutate supported metadata attached to a successfully mutated node.
+
+Current applier contracts:
+
+- `RenameNodeApplierInterface`;
+- `RenameMetadataApplierInterface`.
+
+Current implementations:
+
+- `MethodRenameNodeApplier`;
+- `MethodDocblockRenameApplier`.
+
 ## Design Rule
 
 Do not add a broad refactoring abstraction before the method rename path is proven.

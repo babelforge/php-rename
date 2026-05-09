@@ -62,6 +62,33 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures method renaming updates supported docblock references on matched declaration nodes.
+     */
+    public function testItRenamesSupportedMethodDocblockReferences(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeDocumentedMailerFile($srcDirectory.'/Mailer.php');
+        $this->writeRunnerFile($srcDirectory.'/Runner.php');
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameMethod('App\\Mailer', 'send', 'deliver');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('@see self::deliver()', $printedCode);
+        self::assertStringNotContainsString('@see self::send()', $printedCode);
+        self::assertStringContainsString('Calls send in prose without changing free text.', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -75,6 +102,32 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
 
             final class Mailer
             {
+                public function send(): void
+                {
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the documented mailer fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeDocumentedMailerFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                /**
+                 * Calls send in prose without changing free text.
+                 *
+                 * @see self::send()
+                 */
                 public function send(): void
                 {
                 }

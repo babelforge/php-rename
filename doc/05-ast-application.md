@@ -47,9 +47,19 @@ Unsupported operation kinds or node types produce diagnostics instead of trigger
 
 ## Docblocks
 
-Docblock mutation is not implemented yet.
+Docblock mutation is implemented as metadata application after a node mutation succeeds.
 
-When added, it must remain attached to matched nodes or their direct structural owners. It must not scan unrelated files or comments.
+Current supported method docblock references:
+
+```php
+self::oldName()
+static::oldName()
+parent::oldName()
+```
+
+These references are renamed only on matched method declaration docblocks.
+
+Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
 ## Future Physical Writing
 
