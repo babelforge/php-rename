@@ -10,6 +10,28 @@ Which AST nodes must be changed for this rename to be semantically correct?
 
 Planning must not mutate virtual files.
 
+## Source Of Truth
+
+`member-graph` is the only source of truth for deciding which source nodes belong to a rename.
+
+`PhpRename` must not:
+
+- perform textual search;
+- traverse the AST to discover additional candidates;
+- rebuild inheritance, trait, interface, or consumer scopes;
+- apply fallback replacements on nodes that only look similar.
+
+For method renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->method('App\\Mailer', 'send');
+```
+
+The returned `VirtualPhpSourceFileNodeMatchCollection` is converted to rename operations.
+
 ## Method Rename Scope
 
 For method renaming, the default scope is semantic.
@@ -44,11 +66,32 @@ Examples:
 
 ## Current Implementation
 
-`MemberGraphMethodRenamePlanner` currently returns:
+`MemberGraphMethodRenamePlanner` currently:
 
-- an empty `RenameOperationCollection`;
-- an informational diagnostic saying semantic method rename planning is not implemented yet.
+- calls `MemberGraphSourceNodeLocator::fromBuild($build)->method(...)`;
+- converts member declaration matches to declaration rename operations;
+- converts member usage matches to usage rename operations;
+- emits a warning diagnostic when no source-node match is found.
 
-The next implementation step is to inspect and use the relevant `member-graph` query, impact, and source-node APIs.
+The planner intentionally does not search source code by itself.
+
+## Docblock Boundary
+
+Docblocks are source metadata and will need dedicated handling.
+
+The same source-of-truth rule applies:
+
+- a docblock can be mutated only when it belongs to a matched node;
+- a docblock can be mutated when it belongs to the direct structural owner of a matched node;
+- no global docblock search is allowed.
+
+Examples:
+
+- `ClassMethod` match: the method docblock is eligible.
+- `Param` match: the parent `ClassMethod` or `Function_` docblock is eligible.
+- `PropertyProperty` match: the parent `Property` docblock is eligible.
+- `Const_` match: the parent `ClassConst` docblock is eligible.
+
+Parent links are expected because `php-source-registry` uses `UserLandParser`, and `UserLandParser` runs a parent-connecting visitor.
 
 Navigation: [Documentation](README.md) | [Previous: Architecture](03-architecture.md) | [Next: AST Application](05-ast-application.md)

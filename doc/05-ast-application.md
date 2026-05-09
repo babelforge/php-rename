@@ -6,6 +6,8 @@ AST application mutates virtual PHP files in memory from a `RenamePlan`.
 
 It should not write physical files in the first milestones.
 
+The applier must not discover rename targets. It only mutates nodes already present in the rename plan.
+
 ## Input
 
 The applier receives:
@@ -32,9 +34,22 @@ The applier returns a `RenameResult` containing:
 
 ## Current Implementation
 
-`AstRenamePlanApplier` currently returns the build virtual files unchanged.
+`AstRenamePlanApplier` currently supports method renaming for:
 
-The first real implementation should support method declaration and method call node renaming, then expand only after the method workflow is tested.
+- `PhpParser\Node\Stmt\ClassMethod`;
+- `PhpParser\Node\Expr\MethodCall`;
+- `PhpParser\Node\Expr\NullsafeMethodCall`;
+- `PhpParser\Node\Expr\StaticCall`.
+
+After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
+
+Unsupported operation kinds or node types produce diagnostics instead of triggering fallback source inspection.
+
+## Docblocks
+
+Docblock mutation is not implemented yet.
+
+When added, it must remain attached to matched nodes or their direct structural owners. It must not scan unrelated files or comments.
 
 ## Future Physical Writing
 

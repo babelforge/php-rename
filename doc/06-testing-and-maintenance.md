@@ -20,6 +20,7 @@ The current test suite covers:
 
 - `MethodRenameRequest` validation;
 - `RenameDiagnosticCollection` counting and iteration.
+- method rename planning and AST application against a real `member-graph` build.
 
 ## Testing Direction
 
@@ -41,6 +42,8 @@ Priority cases:
 - Keep public APIs explicit.
 - Prefer DTOs and collections over associative arrays.
 - Keep `member-graph` analysis concerns out of this package.
+- Treat `member-graph` source-node matches as the only rename source of truth.
+- Do not add textual search or fallback AST traversal in `php-rename`.
 - Keep physical file writing out of the first rename milestones.
 - Run PHPStan on both `src` and `tests` before considering a step complete.
 

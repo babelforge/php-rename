@@ -21,10 +21,10 @@ return (new Config())
             // ->append([__DIR__.'/bin-entry-file'])
             // 💡 folders to exclude, if any
             ->exclude([__DIR__ . "/vendor", __DIR__ . "/var"])
-            // 💡 path patterns to exclude, if any
-            // ->notPath([/* ... */])
-            // 💡 extra configs
-            // ->ignoreDotFiles(false) // true by default in v3, false in v4 or future mode
-            // ->ignoreVCS(true) // true by default
+    // 💡 path patterns to exclude, if any
+    // ->notPath([/* ... */])
+    // 💡 extra configs
+    // ->ignoreDotFiles(false) // true by default in v3, false in v4 or future mode
+    // ->ignoreVCS(true) // true by default
     )
-;
+    ;
