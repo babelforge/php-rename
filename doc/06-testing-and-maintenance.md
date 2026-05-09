@@ -21,6 +21,7 @@ The current test suite covers:
 - `MethodRenameRequest` validation;
 - `RenameDiagnosticCollection` counting and iteration.
 - method rename planning and AST application against a real `member-graph` build.
+- property rename planning and AST application against a real `member-graph` build.
 
 ## Testing Direction
 
@@ -30,6 +31,8 @@ Priority cases:
 
 - direct method declaration;
 - direct method call;
+- direct property declaration;
+- direct property fetch;
 - parent and child method declarations;
 - trait method declaration;
 - interface method declaration;

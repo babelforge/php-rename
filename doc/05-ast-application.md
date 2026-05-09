@@ -41,6 +41,13 @@ The applier returns a `RenameResult` containing:
 - `PhpParser\Node\Expr\NullsafeMethodCall`;
 - `PhpParser\Node\Expr\StaticCall`.
 
+It also supports property renaming for:
+
+- `PhpParser\Node\Stmt\PropertyProperty`;
+- `PhpParser\Node\Expr\PropertyFetch`;
+- `PhpParser\Node\Expr\StaticPropertyFetch`;
+- promoted-property `PhpParser\Node\Param` declarations.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported operation kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -58,6 +65,16 @@ parent::oldName()
 ```
 
 These references are renamed only on matched method declaration docblocks.
+
+Current supported property docblock references:
+
+```php
+self::$oldName
+static::$oldName
+parent::$oldName
+```
+
+These references are renamed only on matched property declaration docblocks through the parent `Property` node.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

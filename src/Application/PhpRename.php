@@ -7,11 +7,14 @@ namespace PhpNoobs\PhpRename\Application;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
 use PhpNoobs\PhpRename\Domain\Rename\MethodRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\RenameResult;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphPropertyRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\AstRenamePlanApplier;
 
 /**
@@ -22,13 +25,15 @@ final readonly class PhpRename
     /**
      * Constructor.
      *
-     * @param MemberDependencyGraphBuild   $build               the member graph build used by rename operations
-     * @param MethodRenamePlannerInterface $methodRenamePlanner the method rename planner
-     * @param RenamePlanApplierInterface   $renamePlanApplier   the rename plan applier
+     * @param MemberDependencyGraphBuild     $build                 the member graph build used by rename operations
+     * @param MethodRenamePlannerInterface   $methodRenamePlanner   the method rename planner
+     * @param PropertyRenamePlannerInterface $propertyRenamePlanner the property rename planner
+     * @param RenamePlanApplierInterface     $renamePlanApplier     the rename plan applier
      */
     private function __construct(
         private MemberDependencyGraphBuild $build,
         private MethodRenamePlannerInterface $methodRenamePlanner,
+        private PropertyRenamePlannerInterface $propertyRenamePlanner,
         private RenamePlanApplierInterface $renamePlanApplier,
     ) {
     }
@@ -58,18 +63,21 @@ final readonly class PhpRename
     /**
      * Creates a renamer from an existing member graph build.
      *
-     * @param MemberDependencyGraphBuild        $build               the member graph build
-     * @param MethodRenamePlannerInterface|null $methodRenamePlanner the optional method rename planner override
-     * @param RenamePlanApplierInterface|null   $renamePlanApplier   the optional rename plan applier override
+     * @param MemberDependencyGraphBuild          $build                 the member graph build
+     * @param MethodRenamePlannerInterface|null   $methodRenamePlanner   the optional method rename planner override
+     * @param RenamePlanApplierInterface|null     $renamePlanApplier     the optional rename plan applier override
+     * @param PropertyRenamePlannerInterface|null $propertyRenamePlanner the optional property rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
         ?MethodRenamePlannerInterface $methodRenamePlanner = null,
         ?RenamePlanApplierInterface $renamePlanApplier = null,
+        ?PropertyRenamePlannerInterface $propertyRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
             methodRenamePlanner: $methodRenamePlanner ?? new MemberGraphMethodRenamePlanner(),
+            propertyRenamePlanner: $propertyRenamePlanner ?? new MemberGraphPropertyRenamePlanner(),
             renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
         );
     }
@@ -104,6 +112,40 @@ final readonly class PhpRename
     {
         return $this->renamePlanApplier->apply(
             plan: $this->planMethodRename($className, $methodName, $newMethodName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic property rename.
+     *
+     * @param string $className       the class name that anchors the property rename
+     * @param string $propertyName    the current property name
+     * @param string $newPropertyName the replacement property name
+     *
+     * @throws \InvalidArgumentException when one rename input is empty
+     */
+    public function planPropertyRename(string $className, string $propertyName, string $newPropertyName): RenamePlan
+    {
+        return $this->propertyRenamePlanner->plan(
+            request: new PropertyRenameRequest($className, $propertyName, $newPropertyName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic property rename to virtual file AST nodes.
+     *
+     * @param string $className       the class name that anchors the property rename
+     * @param string $propertyName    the current property name
+     * @param string $newPropertyName the replacement property name
+     *
+     * @throws \InvalidArgumentException when one rename input is empty
+     */
+    public function renameProperty(string $className, string $propertyName, string $newPropertyName): RenameResult
+    {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planPropertyRename($className, $propertyName, $newPropertyName),
             build: $this->build,
         );
     }

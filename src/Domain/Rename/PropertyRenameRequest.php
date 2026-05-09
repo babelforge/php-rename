@@ -5,27 +5,27 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename;
 
 /**
- * Describes a method rename intent anchored to a class name.
+ * Describes a property rename intent anchored to a class name.
  */
-final readonly class MethodRenameRequest implements RenameRequestInterface
+final readonly class PropertyRenameRequest implements RenameRequestInterface
 {
     /**
      * Constructor.
      *
-     * @param string $className     the class name that anchors the method rename
-     * @param string $methodName    the current method name
-     * @param string $newMethodName the replacement method name
+     * @param string $className       the class name that anchors the property rename
+     * @param string $propertyName    the current property name
+     * @param string $newPropertyName the replacement property name
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
     public function __construct(
         public string $className,
-        public string $methodName,
-        public string $newMethodName,
+        public string $propertyName,
+        public string $newPropertyName,
     ) {
         $this->guardNotEmpty($className, 'className');
-        $this->guardNotEmpty($methodName, 'methodName');
-        $this->guardNotEmpty($newMethodName, 'newMethodName');
+        $this->guardNotEmpty($propertyName, 'propertyName');
+        $this->guardNotEmpty($newPropertyName, 'newPropertyName');
     }
 
     /**
@@ -33,7 +33,7 @@ final readonly class MethodRenameRequest implements RenameRequestInterface
      */
     public function oldName(): string
     {
-        return $this->methodName;
+        return $this->propertyName;
     }
 
     /**
@@ -41,7 +41,7 @@ final readonly class MethodRenameRequest implements RenameRequestInterface
      */
     public function newName(): string
     {
-        return $this->newMethodName;
+        return $this->newPropertyName;
     }
 
     /**

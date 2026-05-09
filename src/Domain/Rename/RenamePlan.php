@@ -12,12 +12,12 @@ final readonly class RenamePlan
     /**
      * Constructor.
      *
-     * @param MethodRenameRequest        $request     the method rename request
+     * @param RenameRequestInterface     $request     the rename request
      * @param RenameOperationCollection  $operations  the AST rename operations
      * @param RenameDiagnosticCollection $diagnostics the planning diagnostics
      */
     public function __construct(
-        public MethodRenameRequest $request,
+        public RenameRequestInterface $request,
         public RenameOperationCollection $operations,
         public RenameDiagnosticCollection $diagnostics,
     ) {

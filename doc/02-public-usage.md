@@ -41,7 +41,7 @@ $plan = $renamer->planMethodRename(
 );
 ```
 
-The current implementation returns an empty plan with an informational diagnostic because semantic planning is not implemented yet.
+The current implementation converts `member-graph` source-node matches into rename operations.
 
 ## Apply A Method Rename
 
@@ -55,6 +55,26 @@ $result = $renamer->renameMethod(
 );
 ```
 
-The current implementation returns the build virtual files unchanged because AST mutation is not implemented yet.
+The current implementation mutates matched method declaration and usage nodes in virtual files.
+
+## Plan And Apply A Property Rename
+
+Property rename follows the same plan/apply split:
+
+```php
+$plan = $renamer->planPropertyRename(
+    className: App\Service\UserMailer::class,
+    propertyName: 'transport',
+    newPropertyName: 'mailerTransport',
+);
+
+$result = $renamer->renameProperty(
+    className: App\Service\UserMailer::class,
+    propertyName: 'transport',
+    newPropertyName: 'mailerTransport',
+);
+```
+
+The property planner uses `member-graph` source-node matches only. The applier supports property declarations, instance property fetches, static property fetches, and promoted-property declaration nodes.
 
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

@@ -32,6 +32,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The returned `VirtualPhpSourceFileNodeMatchCollection` is converted to rename operations.
 
+For property renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->property('App\\Mailer', 'transport');
+```
+
+The same source-of-truth rule applies.
+
 ## Method Rename Scope
 
 For method renaming, the default scope is semantic.
@@ -72,6 +83,8 @@ Examples:
 - converts member declaration matches to declaration rename operations;
 - converts member usage matches to usage rename operations;
 - emits a warning diagnostic when no source-node match is found.
+
+`MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
 
 The planner intentionally does not search source code by itself.
 
