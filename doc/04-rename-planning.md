@@ -43,6 +43,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The same source-of-truth rule applies.
 
+For class-constant renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->classConstant('App\\Mailer', 'DEFAULT_TRANSPORT');
+```
+
+The same source-of-truth rule applies.
+
 ## Method Rename Scope
 
 For method renaming, the default scope is semantic.
@@ -85,6 +96,8 @@ Examples:
 - emits a warning diagnostic when no source-node match is found.
 
 `MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
+
+`MemberGraphClassConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`.
 
 The planner intentionally does not search source code by itself.
 

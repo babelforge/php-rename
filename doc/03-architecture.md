@@ -60,6 +60,8 @@ Current implementations:
 - `MethodDocblockRenameApplier`.
 - `PropertyRenameNodeApplier`;
 - `PropertyDocblockRenameApplier`.
+- `ClassConstantRenameNodeApplier`;
+- `ClassConstantDocblockRenameApplier`.
 
 ## Design Rule
 

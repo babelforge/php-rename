@@ -77,4 +77,24 @@ $result = $renamer->renameProperty(
 
 The property planner uses `member-graph` source-node matches only. The applier supports property declarations, instance property fetches, static property fetches, and promoted-property declaration nodes.
 
+## Plan And Apply A Class-Constant Rename
+
+Class-constant rename follows the same plan/apply split:
+
+```php
+$plan = $renamer->planClassConstantRename(
+    className: App\Service\UserMailer::class,
+    constantName: 'DEFAULT_TRANSPORT',
+    newConstantName: 'FALLBACK_TRANSPORT',
+);
+
+$result = $renamer->renameClassConstant(
+    className: App\Service\UserMailer::class,
+    constantName: 'DEFAULT_TRANSPORT',
+    newConstantName: 'FALLBACK_TRANSPORT',
+);
+```
+
+The class-constant planner uses `member-graph` source-node matches only. The applier supports class-constant declarations, enum-case declarations, and class-constant fetches.
+
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

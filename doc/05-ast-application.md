@@ -48,6 +48,12 @@ It also supports property renaming for:
 - `PhpParser\Node\Expr\StaticPropertyFetch`;
 - promoted-property `PhpParser\Node\Param` declarations.
 
+It also supports class-constant renaming for:
+
+- `PhpParser\Node\Const_`;
+- `PhpParser\Node\Expr\ClassConstFetch`;
+- `PhpParser\Node\Stmt\EnumCase`.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported operation kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -75,6 +81,16 @@ parent::$oldName
 ```
 
 These references are renamed only on matched property declaration docblocks through the parent `Property` node.
+
+Current supported class-constant docblock references:
+
+```php
+self::OLD_NAME
+static::OLD_NAME
+parent::OLD_NAME
+```
+
+These references are renamed only on matched class-constant declaration docblocks through the parent `ClassConst` node, or on matched enum-case docblocks.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
