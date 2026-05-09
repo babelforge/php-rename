@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename;
+namespace PhpNoobs\PhpRename\Domain\Rename\Operation;
 
 /**
  * Collection of AST rename operations.

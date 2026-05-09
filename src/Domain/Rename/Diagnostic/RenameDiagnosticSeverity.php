@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename;
+namespace PhpNoobs\PhpRename\Domain\Rename\Diagnostic;
 
 /**
  * Enumerates rename diagnostic severities.

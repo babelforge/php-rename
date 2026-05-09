@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Application\Contract;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\PhpRename\Domain\Rename\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\RenameResult;
+use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
+use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 
 /**
  * Applies a rename plan to virtual file AST nodes.

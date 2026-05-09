@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Infrastructure\PhpParser\Application;
 
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticCollection;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 
 /**
  * Carries shared state while applying rename operations.

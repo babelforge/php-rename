@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename;
+namespace PhpNoobs\PhpRename\Domain\Rename\Operation;
 
+use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
 use PhpParser\Node;
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Infrastructure\PhpParser\Property;
 
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\RenameSymbolKind;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
+use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
 use PhpParser\Node\Expr\PropertyFetch;

@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename;
+namespace PhpNoobs\PhpRename\Domain\Rename\Plan;
 
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
 
 /**

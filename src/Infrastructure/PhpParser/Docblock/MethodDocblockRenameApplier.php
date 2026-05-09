@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock;
 
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperationRole;
-use PhpNoobs\PhpRename\Domain\Rename\RenameSymbolKind;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
+use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpParser\Comment\Doc;

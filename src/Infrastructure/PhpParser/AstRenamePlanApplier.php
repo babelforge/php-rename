@@ -6,12 +6,12 @@ namespace PhpNoobs\PhpRename\Infrastructure\PhpParser;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\RenameResult;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
+use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
+use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;

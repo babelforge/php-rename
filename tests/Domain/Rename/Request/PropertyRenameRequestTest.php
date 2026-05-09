@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Domain\Rename;
+namespace PhpNoobs\PhpRename\Tests\Domain\Rename\Request;
 
-use PhpNoobs\PhpRename\Domain\Rename\PropertyRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PHPUnit\Framework\TestCase;
 
 /**

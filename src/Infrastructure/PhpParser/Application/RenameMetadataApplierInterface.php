@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Infrastructure\PhpParser\Application;
 
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperation;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 
 /**
  * Applies metadata mutations associated with a rename operation.

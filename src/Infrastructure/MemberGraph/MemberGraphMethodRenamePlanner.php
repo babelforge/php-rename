@@ -8,15 +8,15 @@ use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
-use PhpNoobs\PhpRename\Domain\Rename\MethodRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperationCollection;
-use PhpNoobs\PhpRename\Domain\Rename\RenameOperationRole;
-use PhpNoobs\PhpRename\Domain\Rename\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\RenameSymbolKind;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
+use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
+use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
+use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 
 /**
  * Plans method renames from `member-graph` semantic facts.
