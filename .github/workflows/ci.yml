@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    name: PHP 8.4 Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+
+      - name: Configure local package repositories
+        run: |
+          composer config repositories.0 vcs https://github.com/php-noobs/member-graph.git
+          composer config repositories.1 vcs https://github.com/php-noobs/php-source-registry.git
+
+      - name: Validate Composer
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Check code style
+        run: composer cs
+
+      - name: Analyse source
+        run: vendor/bin/phpstan analyse src --no-progress --error-format=table
+
+      - name: Analyse tests
+        run: vendor/bin/phpstan analyse tests --no-progress --error-format=table
+
+      - name: Run tests
+        run: vendor/bin/phpunit

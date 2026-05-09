@@ -1,0 +1,110 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpNoobs\PhpRename\Application;
+
+use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
+use PhpNoobs\PhpRename\Domain\Rename\MethodRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\RenamePlan;
+use PhpNoobs\PhpRename\Domain\Rename\RenameResult;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\AstRenamePlanApplier;
+
+/**
+ * Public facade for planning and applying PHP symbol renames.
+ */
+final readonly class PhpRename
+{
+    /**
+     * Constructor.
+     *
+     * @param MemberDependencyGraphBuild   $build               the member graph build used by rename operations
+     * @param MethodRenamePlannerInterface $methodRenamePlanner the method rename planner
+     * @param RenamePlanApplierInterface   $renamePlanApplier   the rename plan applier
+     */
+    private function __construct(
+        private MemberDependencyGraphBuild $build,
+        private MethodRenamePlannerInterface $methodRenamePlanner,
+        private RenamePlanApplierInterface $renamePlanApplier,
+    ) {
+    }
+
+    /**
+     * Creates a renamer from project directories.
+     *
+     * @param list<string> $directories         the directories to scan
+     * @param string       $cacheFilePath       the member graph cache file path
+     * @param list<string> $excludedDirectories the directories to exclude from scanning
+     * @param bool         $clearCache          whether the member graph cache must be cleared first
+     */
+    public static function fromDirectory(
+        array $directories,
+        string $cacheFilePath,
+        array $excludedDirectories = [],
+        bool $clearCache = false,
+    ): self {
+        return self::fromBuild(MemberDependencyGraphFactory::fromDirectory(
+            directories: $directories,
+            cacheFilePath: $cacheFilePath,
+            excludedDirectories: $excludedDirectories,
+            clearCache: $clearCache,
+        ));
+    }
+
+    /**
+     * Creates a renamer from an existing member graph build.
+     *
+     * @param MemberDependencyGraphBuild        $build               the member graph build
+     * @param MethodRenamePlannerInterface|null $methodRenamePlanner the optional method rename planner override
+     * @param RenamePlanApplierInterface|null   $renamePlanApplier   the optional rename plan applier override
+     */
+    public static function fromBuild(
+        MemberDependencyGraphBuild $build,
+        ?MethodRenamePlannerInterface $methodRenamePlanner = null,
+        ?RenamePlanApplierInterface $renamePlanApplier = null,
+    ): self {
+        return new self(
+            build: $build,
+            methodRenamePlanner: $methodRenamePlanner ?? new MemberGraphMethodRenamePlanner(),
+            renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
+        );
+    }
+
+    /**
+     * Plans a semantic method rename.
+     *
+     * @param string $className     the class name that anchors the method rename
+     * @param string $methodName    the current method name
+     * @param string $newMethodName the replacement method name
+     *
+     * @throws \InvalidArgumentException when one rename input is empty
+     */
+    public function planMethodRename(string $className, string $methodName, string $newMethodName): RenamePlan
+    {
+        return $this->methodRenamePlanner->plan(
+            request: new MethodRenameRequest($className, $methodName, $newMethodName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic method rename to virtual file AST nodes.
+     *
+     * @param string $className     the class name that anchors the method rename
+     * @param string $methodName    the current method name
+     * @param string $newMethodName the replacement method name
+     *
+     * @throws \InvalidArgumentException when one rename input is empty
+     */
+    public function renameMethod(string $className, string $methodName, string $newMethodName): RenameResult
+    {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planMethodRename($className, $methodName, $newMethodName),
+            build: $this->build,
+        );
+    }
+}
