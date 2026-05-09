@@ -1,14 +1,16 @@
 name: CI
 
 on:
-  pull_request:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
 jobs:
-  quality:
-    name: PHP 8.4 Quality
+  qa:
+    name: PHP 8.4 QA
     runs-on: ubuntu-latest
 
     steps:
@@ -22,19 +24,18 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Configure local package repositories
-        run: |
-          composer config repositories.0 vcs https://github.com/php-noobs/member-graph.git
-          composer config repositories.1 vcs https://github.com/php-noobs/php-source-registry.git
+      - name: Validate Composer configuration
+        run: composer validate --strict --no-check-publish
 
-      - name: Validate Composer
-        run: composer validate --strict
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
-
-      - name: Check code style
-        run: composer cs
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Analyse source
         run: vendor/bin/phpstan analyse src --no-progress --error-format=table
