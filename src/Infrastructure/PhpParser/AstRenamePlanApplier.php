@@ -15,8 +15,10 @@ use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Class_\ClassRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\ClassConstant\ClassConstantRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassConstantDocblockRenameApplier;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\FunctionDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\MethodDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\PropertyDocblockRenameApplier;
@@ -51,12 +53,14 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
         ?array $metadataAppliers = null,
     ) {
         $this->nodeAppliers = $nodeAppliers ?? [
+            new ClassRenameNodeApplier(),
             new MethodRenameNodeApplier(),
             new PropertyRenameNodeApplier(),
             new ClassConstantRenameNodeApplier(),
             new FunctionRenameNodeApplier(),
         ];
         $this->metadataAppliers = $metadataAppliers ?? [
+            new ClassDocblockRenameApplier(),
             new MethodDocblockRenameApplier(),
             new PropertyDocblockRenameApplier(),
             new ClassConstantDocblockRenameApplier(),

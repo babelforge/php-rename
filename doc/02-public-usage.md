@@ -57,6 +57,24 @@ $result = $renamer->renameMethod(
 
 The current implementation mutates matched method declaration and usage nodes in virtual files.
 
+## Plan And Apply A Class Rename
+
+Class rename uses the fully-qualified current class-like owner name and a short replacement name:
+
+```php
+$plan = $renamer->planClassRename(
+    className: App\Service\UserMailer::class,
+    newClassName: 'TransactionalMailer',
+);
+
+$result = $renamer->renameClass(
+    className: App\Service\UserMailer::class,
+    newClassName: 'TransactionalMailer',
+);
+```
+
+The class planner uses `member-graph` owner source-node matches only. The first class rename slice does not move classes between namespaces.
+
 ## Plan And Apply A Property Rename
 
 Property rename follows the same plan/apply split:

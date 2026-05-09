@@ -32,6 +32,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The returned `VirtualPhpSourceFileNodeMatchCollection` is converted to rename operations.
 
+For class renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->owner('App\\Mailer');
+```
+
+The first class rename slice expects a fully-qualified current class-like owner name and a short replacement class name. It does not move classes between namespaces.
+
 For property renaming, planning starts from:
 
 ```php
@@ -105,6 +116,8 @@ Examples:
 - converts member declaration matches to declaration rename operations;
 - converts member usage matches to usage rename operations;
 - emits a warning diagnostic when no source-node match is found.
+
+`MemberGraphClassRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::owner(...)`.
 
 `MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
 

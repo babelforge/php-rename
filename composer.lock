@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/member-graph.git",
-                "reference": "3a62ac4b4279239ba1fc871275271b9483822520"
+                "reference": "54d7066b564194369126ef57b3c7856b45fc2940"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/3a62ac4b4279239ba1fc871275271b9483822520",
-                "reference": "3a62ac4b4279239ba1fc871275271b9483822520",
+                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/54d7066b564194369126ef57b3c7856b45fc2940",
+                "reference": "54d7066b564194369126ef57b3c7856b45fc2940",
                 "shasum": ""
             },
             "require": {
@@ -130,7 +130,7 @@
                 "source": "https://github.com/php-noobs/member-graph/tree/main",
                 "issues": "https://github.com/php-noobs/member-graph/issues"
             },
-            "time": "2026-05-09T09:21:12+00:00"
+            "time": "2026-05-09T17:15:47+00:00"
         },
         {
             "name": "php-noobs/php-source-registry",

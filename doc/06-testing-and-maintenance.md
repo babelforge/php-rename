@@ -20,6 +20,7 @@ The current test suite covers:
 
 - `MethodRenameRequest` validation;
 - `RenameDiagnosticCollection` counting and iteration.
+- class rename planning and AST application against a real `member-graph` build.
 - method rename planning and AST application against a real `member-graph` build.
 - property rename planning and AST application against a real `member-graph` build.
 - class-constant rename planning and AST application against a real `member-graph` build.
@@ -31,6 +32,8 @@ The method rename workflow should be tested with small readable fixtures.
 
 Priority cases:
 
+- direct class-like owner declaration;
+- direct class-like owner usage;
 - direct method declaration;
 - direct method call;
 - direct property declaration;

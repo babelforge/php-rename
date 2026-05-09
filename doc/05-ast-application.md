@@ -41,6 +41,11 @@ The applier returns a `RenameResult` containing:
 - `PhpParser\Node\Expr\NullsafeMethodCall`;
 - `PhpParser\Node\Expr\StaticCall`.
 
+It also supports class renaming for:
+
+- `PhpParser\Node\Stmt\ClassLike`;
+- `PhpParser\Node\Name`.
+
 It also supports property renaming for:
 
 - `PhpParser\Node\Stmt\PropertyProperty`;
@@ -76,6 +81,18 @@ parent::oldName()
 ```
 
 These references are renamed only on matched method declaration docblocks.
+
+Current supported class docblock references:
+
+```php
+@see OldClass
+@var OldClass
+@param OldClass $value
+@return OldClass
+@throws OldClass
+```
+
+These references are renamed only on matched class-like owner declaration docblocks.
 
 Current supported property docblock references:
 
