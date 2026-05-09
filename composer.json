@@ -1,0 +1,51 @@
+{
+    "name": "php-noobs/php-rename",
+    "type": "library",
+    "license": "MIT",
+    "description": "PHP refactoring library for safe class and member renaming.",
+    "autoload": {
+        "psr-4": {
+            "PhpNoobs\\PhpRename\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpNoobs\\PhpRename\\Tests\\": "tests/"
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "/Users/user/Documents/__Dev/_projets/__README/- associated-mini-projects -/PhpNoobs/member-graph"
+        },
+        {
+            "type": "vcs",
+            "url": "/Users/user/Documents/__Dev/_projets/__README/- associated-mini-projects -/PhpNoobs/php-source-registry"
+        }
+    ],
+    "require": {
+        "php": ">=8.4",
+        "php-noobs/member-graph": "dev-main",
+        "nikic/php-parser": "^5.7",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.95"
+    },
+    "scripts": {
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "test": "phpunit",
+        "analyse": "phpstan analyse",
+        "qa": [
+            "@cs",
+            "@analyse",
+            "@test"
+        ]
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
