@@ -165,6 +165,132 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures class FQCN import alias conflicts are reported before application.
+     */
+    public function testItHandlesClassFqcnImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            class Mailer
+            {
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use App\Mailer;
+            use Other\Sender;
+
+            final class Consumer
+            {
+                public function create(): Mailer
+                {
+                    return new Mailer();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender'), 'new \\App\\Mailer()');
+        $this->assertConflictReportsAndApplies($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender', RenameConflictPolicy::REPORT), 'new \\Tools\\Sender()');
+    }
+
+    /**
+     * Ensures grouped class-like import alias conflicts are reported before application.
+     */
+    public function testItHandlesClassFqcnGroupedImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            class Mailer
+            {
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use App\Mailer;
+            use Other\{Sender, Logger};
+
+            final class Consumer
+            {
+                public function create(): Mailer
+                {
+                    return new Mailer();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender'), 'new \\App\\Mailer()');
+        $this->assertConflictReportsAndApplies($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender', RenameConflictPolicy::REPORT), 'new \\Tools\\Sender()');
+    }
+
+    /**
+     * Ensures explicit class-like import alias conflicts are reported before application.
+     */
+    public function testItHandlesClassFqcnExplicitImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            class Mailer
+            {
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use App\Mailer;
+            use Other\Logger as Sender;
+
+            final class Consumer
+            {
+                public function create(): Mailer
+                {
+                    return new Mailer();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender'), 'new \\App\\Mailer()');
+        $this->assertConflictReportsAndApplies($renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender', RenameConflictPolicy::REPORT), 'new \\Tools\\Sender()');
+    }
+
+    /**
      * Ensures short function conflicts block application by default and can be reported as warnings.
      */
     public function testItHandlesFunctionRenameConflicts(): void
@@ -224,6 +350,135 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
 
         $this->assertConflictBlocksApplication($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail'), 'namespace App;');
         $this->assertConflictReportsAndApplies($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail', RenameConflictPolicy::REPORT), 'namespace Tools;');
+    }
+
+    /**
+     * Ensures function FQCN import alias conflicts are reported before application.
+     */
+    public function testItHandlesFunctionFqcnImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/functions.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            function send_mail(): string
+            {
+                return 'sent';
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use function App\send_mail;
+            use function Other\deliver_mail;
+
+            final class Consumer
+            {
+                public function run(): string
+                {
+                    return send_mail();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail'), 'return \\App\\send_mail();');
+        $this->assertConflictReportsAndApplies($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail', RenameConflictPolicy::REPORT), 'return \\Tools\\deliver_mail();');
+    }
+
+    /**
+     * Ensures grouped function import alias conflicts are reported before application.
+     */
+    public function testItHandlesFunctionFqcnGroupedImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/functions.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            function send_mail(): string
+            {
+                return 'sent';
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use function App\send_mail;
+            use function Other\{deliver_mail, log_mail};
+
+            final class Consumer
+            {
+                public function run(): string
+                {
+                    return send_mail();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail'), 'return \\App\\send_mail();');
+        $this->assertConflictReportsAndApplies($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail', RenameConflictPolicy::REPORT), 'return \\Tools\\deliver_mail();');
+    }
+
+    /**
+     * Ensures explicit function import alias conflicts are reported before application.
+     */
+    public function testItHandlesFunctionFqcnExplicitImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/functions.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            function send_mail(): string
+            {
+                return 'sent';
+            }
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use function App\send_mail;
+            use function Other\log_mail as deliver_mail;
+
+            final class Consumer
+            {
+                public function run(): string
+                {
+                    return send_mail();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail'), 'return \\App\\send_mail();');
+        $this->assertConflictReportsAndApplies($renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail', RenameConflictPolicy::REPORT), 'return \\Tools\\deliver_mail();');
     }
 
     /**

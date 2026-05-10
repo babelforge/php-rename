@@ -25,6 +25,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
+use PhpParser\Node\Stmt\Namespace_;
 
 /**
  * Converts neutral `member-graph` scope facts into rename conflict diagnostics.
@@ -153,7 +154,8 @@ final readonly class MemberGraphRenameConflictGuard
         MemberDependencyGraphBuild $build,
     ): void {
         $newName = $request->newName();
-        $scope = MemberGraphSymbolScopeLocator::fromBuild($build)->classLikeNamespaceScope($this->namespaceName($newName));
+        $scopeLocator = MemberGraphSymbolScopeLocator::fromBuild($build);
+        $scope = $scopeLocator->classLikeNamespaceScope($this->namespaceName($newName));
 
         $this->reportShortNameConflict(
             diagnostics: $diagnostics,
@@ -164,6 +166,7 @@ final readonly class MemberGraphRenameConflictGuard
             message: sprintf('The class-like FQCN "%s" already exists.', $newName),
             caseSensitive: false,
         );
+        $this->reportClassImportAliasConflicts($diagnostics, $request, $build, $scopeLocator);
     }
 
     /**
@@ -204,7 +207,8 @@ final readonly class MemberGraphRenameConflictGuard
         MemberDependencyGraphBuild $build,
     ): void {
         $newName = $request->newName();
-        $scope = MemberGraphSymbolScopeLocator::fromBuild($build)->functionNamespaceScope($this->namespaceName($newName));
+        $scopeLocator = MemberGraphSymbolScopeLocator::fromBuild($build);
+        $scope = $scopeLocator->functionNamespaceScope($this->namespaceName($newName));
 
         $this->reportShortNameConflict(
             diagnostics: $diagnostics,
@@ -215,6 +219,7 @@ final readonly class MemberGraphRenameConflictGuard
             message: sprintf('The function FQCN "%s" already exists.', $newName),
             caseSensitive: false,
         );
+        $this->reportFunctionImportAliasConflicts($diagnostics, $request, $build, $scopeLocator);
     }
 
     /**
@@ -338,6 +343,121 @@ final readonly class MemberGraphRenameConflictGuard
     }
 
     /**
+     * Reports class-like import alias conflicts for one class FQCN rename.
+     *
+     * @param RenameDiagnosticCollection    $diagnostics  the diagnostics to update
+     * @param ClassFqcnRenameRequest        $request      the rename request
+     * @param MemberDependencyGraphBuild    $build        the member graph build
+     * @param MemberGraphSymbolScopeLocator $scopeLocator the symbol scope locator
+     */
+    private function reportClassImportAliasConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        ClassFqcnRenameRequest $request,
+        MemberDependencyGraphBuild $build,
+        MemberGraphSymbolScopeLocator $scopeLocator,
+    ): void {
+        $newName = $request->newName();
+        $newShortName = $this->shortName($newName);
+        $newNamespaceName = $this->namespaceName($newName);
+        $visitedVirtualFiles = [];
+        $matches = MemberGraphSourceNodeLocator::fromBuild($build)->owner($request->className)->ownerUsages();
+
+        foreach ($matches as $match) {
+            if (true === ($visitedVirtualFiles[$match->virtualFile->virtualFilePath] ?? false)) {
+                continue;
+            }
+
+            $visitedVirtualFiles[$match->virtualFile->virtualFilePath] = true;
+
+            if ($this->nodeNamespaceName($match->node) === $newNamespaceName) {
+                continue;
+            }
+
+            if (!$this->hasImportAliasConflict($scopeLocator->fileImportScope($match->virtualFile)->classLikeImports(), $request->oldName(), $newName, $newShortName, false)) {
+                continue;
+            }
+
+            $diagnostics->add(new RenameDiagnostic(
+                severity: $this->severity($request->conflictPolicy),
+                message: sprintf('The class-like import alias "%s" already exists in a usage file.', $newShortName),
+            ));
+        }
+    }
+
+    /**
+     * Reports function import alias conflicts for one function FQCN rename.
+     *
+     * @param RenameDiagnosticCollection    $diagnostics  the diagnostics to update
+     * @param FunctionFqcnRenameRequest     $request      the rename request
+     * @param MemberDependencyGraphBuild    $build        the member graph build
+     * @param MemberGraphSymbolScopeLocator $scopeLocator the symbol scope locator
+     */
+    private function reportFunctionImportAliasConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        FunctionFqcnRenameRequest $request,
+        MemberDependencyGraphBuild $build,
+        MemberGraphSymbolScopeLocator $scopeLocator,
+    ): void {
+        $newName = $request->newName();
+        $newShortName = $this->shortName($newName);
+        $newNamespaceName = $this->namespaceName($newName);
+        $visitedVirtualFiles = [];
+        $matches = MemberGraphSourceNodeLocator::fromBuild($build)->function($request->functionName)->memberUsages();
+
+        foreach ($matches as $match) {
+            if (true === ($visitedVirtualFiles[$match->virtualFile->virtualFilePath] ?? false)) {
+                continue;
+            }
+
+            $visitedVirtualFiles[$match->virtualFile->virtualFilePath] = true;
+
+            if ($this->nodeNamespaceName($match->node) === $newNamespaceName) {
+                continue;
+            }
+
+            if (!$this->hasImportAliasConflict($scopeLocator->fileImportScope($match->virtualFile)->functionImports(), $request->oldName(), $newName, $newShortName, false)) {
+                continue;
+            }
+
+            $diagnostics->add(new RenameDiagnostic(
+                severity: $this->severity($request->conflictPolicy),
+                message: sprintf('The function import alias "%s" already exists in a usage file.', $newShortName),
+            ));
+        }
+    }
+
+    /**
+     * Indicates whether import facts contain an alias collision.
+     *
+     * @param MemberGraphSymbolScopeFactCollection $facts         the import facts
+     * @param string                               $oldName       the old FQCN
+     * @param string                               $newName       the new FQCN
+     * @param string                               $newShortName  the new short name
+     * @param bool                                 $caseSensitive whether aliases must be compared case-sensitively
+     */
+    private function hasImportAliasConflict(
+        MemberGraphSymbolScopeFactCollection $facts,
+        string $oldName,
+        string $newName,
+        string $newShortName,
+        bool $caseSensitive,
+    ): bool {
+        foreach ($facts as $fact) {
+            if (null === $fact->alias || !$this->sameName($fact->alias, $newShortName, $caseSensitive)) {
+                continue;
+            }
+
+            if (null !== $fact->fqcn && ($this->sameFqcn($fact->fqcn, $oldName, $caseSensitive) || $this->sameFqcn($fact->fqcn, $newName, $caseSensitive))) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Indicates whether facts contain the requested local name.
      *
      * @param MemberGraphSymbolScopeFactCollection $facts         the scope facts to inspect
@@ -436,6 +556,26 @@ final readonly class MemberGraphRenameConflictGuard
     }
 
     /**
+     * Returns the nearest namespace name for one matched node.
+     *
+     * @param Node $node the matched node
+     */
+    private function nodeNamespaceName(Node $node): string
+    {
+        $parent = $node->getAttribute('parent');
+
+        while ($parent instanceof Node) {
+            if ($parent instanceof Namespace_) {
+                return $parent->name?->toString() ?? '';
+            }
+
+            $parent = $parent->getAttribute('parent');
+        }
+
+        return '';
+    }
+
+    /**
      * Indicates whether two names are equal under the requested comparison mode.
      *
      * @param string $left          the left name
@@ -449,6 +589,18 @@ final readonly class MemberGraphRenameConflictGuard
         }
 
         return strtolower($left) === strtolower($right);
+    }
+
+    /**
+     * Indicates whether two FQCN-like names are equal.
+     *
+     * @param string $left          the left FQCN
+     * @param string $right         the right FQCN
+     * @param bool   $caseSensitive whether names must be compared case-sensitively
+     */
+    private function sameFqcn(string $left, string $right, bool $caseSensitive): bool
+    {
+        return $this->sameName(ltrim($left, '\\'), ltrim($right, '\\'), $caseSensitive);
     }
 
     /**

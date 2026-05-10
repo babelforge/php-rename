@@ -162,6 +162,7 @@ Current conflict checks consume `member-graph` scope facts for:
 - class constants and enum cases in the resolved owner scope;
 - class-like declarations in the target namespace;
 - function declarations in the target namespace;
+- class-like and function import aliases in usage files for FQCN renames, including normal imports, grouped imports, and explicit aliases;
 - same-signature parameters and local variables in the declaring body.
 
 Conflict comparisons follow PHP naming semantics: class-like, function, and method collisions are checked case-insensitively, while properties, class constants, enum cases, parameters, and local variables remain case-sensitive.

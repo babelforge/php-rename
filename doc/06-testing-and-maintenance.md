@@ -32,6 +32,7 @@ The current test suite covers:
 - no-op rename planning across every supported rename family.
 - request validation for invalid identifiers and FQCN-like names.
 - case-sensitivity rules for rename conflict policy.
+- class-like and function import alias conflicts for FQCN renames, including normal imports, grouped imports, and explicit aliases.
 
 ## Testing Direction
 
@@ -67,6 +68,7 @@ Priority cases:
 - no-op renames produce warning diagnostics and empty plans.
 - class-like, function, and method conflicts are case-insensitive;
 - property, class-constant, and parameter conflicts are case-sensitive.
+- FQCN renames report normal, grouped, and explicit-alias import conflicts, then fall back to fully-qualified usages when application is allowed.
 
 ## Maintenance Rules
 

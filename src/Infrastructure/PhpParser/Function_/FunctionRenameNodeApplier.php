@@ -16,6 +16,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\GroupUse;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\UseItem;
@@ -205,20 +206,34 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
         }
 
         foreach ($namespace->stmts as $statement) {
-            if (!$statement instanceof Use_ || Use_::TYPE_FUNCTION !== $statement->type) {
+            $importStatement = $this->functionImportStatement($statement);
+
+            if (null === $importStatement) {
                 continue;
             }
 
-            foreach ($statement->uses as $use) {
-                if (ltrim($use->name->toString(), '\\') === ltrim($newName, '\\')) {
+            foreach ($importStatement->uses as $use) {
+                $importedName = $this->importedName($importStatement, $use);
+
+                if (ltrim($importedName, '\\') === ltrim($newName, '\\')) {
                     return $use->getAlias()->toString();
                 }
 
-                if ($use->getAlias()->toString() === $newShortName && ltrim($use->name->toString(), '\\') !== ltrim($oldName, '\\')) {
+                if ($use->getAlias()->toString() === $newShortName && ltrim($importedName, '\\') !== ltrim($oldName, '\\')) {
                     return null;
                 }
+            }
+        }
 
-                if (ltrim($use->name->toString(), '\\') !== ltrim($oldName, '\\')) {
+        foreach ($namespace->stmts as $statement) {
+            $importStatement = $this->functionImportStatement($statement);
+
+            if (null === $importStatement) {
+                continue;
+            }
+
+            foreach ($importStatement->uses as $use) {
+                if (ltrim($this->importedName($importStatement, $use), '\\') !== ltrim($oldName, '\\')) {
                     continue;
                 }
 
@@ -255,6 +270,39 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
         }
 
         array_splice($namespace->stmts, $insertAt, 0, [$use]);
+    }
+
+    /**
+     * Returns the statement when it declares function imports.
+     *
+     * @param Node $statement the statement to inspect
+     */
+    private function functionImportStatement(Node $statement): Use_|GroupUse|null
+    {
+        if ($statement instanceof Use_) {
+            return Use_::TYPE_FUNCTION === $statement->type ? $statement : null;
+        }
+
+        if (!$statement instanceof GroupUse) {
+            return null;
+        }
+
+        return Use_::TYPE_FUNCTION === $statement->type ? $statement : null;
+    }
+
+    /**
+     * Returns the fully-qualified imported name represented by one use item.
+     *
+     * @param Use_|GroupUse $statement the import statement
+     * @param UseItem       $use       the import item
+     */
+    private function importedName(Use_|GroupUse $statement, UseItem $use): string
+    {
+        if (!$statement instanceof GroupUse) {
+            return $use->name->toString();
+        }
+
+        return $statement->prefix->toString().'\\'.$use->name->toString();
     }
 
     /**
