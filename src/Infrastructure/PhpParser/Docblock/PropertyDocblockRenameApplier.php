@@ -11,6 +11,8 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationCon
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpParser\Comment\Doc;
 use PhpParser\Node\Param;
+use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
 
@@ -41,6 +43,7 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
     {
         if ($operation->node instanceof Param) {
             $this->renameNodeDocblock($operation->node, $operation->oldName, $operation->newName);
+            $this->renameParentClassDocblock($operation->node, $operation->oldName, $operation->newName);
 
             return;
         }
@@ -52,6 +55,7 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
         }
 
         $this->renameNodeDocblock($property, $operation->oldName, $operation->newName);
+        $this->renameParentClassDocblock($property, $operation->oldName, $operation->newName);
     }
 
     /**
@@ -94,9 +98,47 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
         $quotedOldName = preg_quote($oldName, '/');
 
         return preg_replace(
-            pattern: '/\b(self|static|parent)::\$'.$quotedOldName.'\b/',
-            replacement: '$1::$'.$newName,
+            pattern: '/(?:(\b(?:self|static|parent)::\$)'.$quotedOldName.'|(@property(?:-read|-write)?\s+[^\r\n]*\s+\$)'.$quotedOldName.')\b/',
+            replacement: '$1$2'.$newName,
             subject: $text,
         ) ?? $text;
+    }
+
+    /**
+     * Applies property docblock reference changes on the direct class-like parent.
+     *
+     * @param Param|Property $node    the node used to find the class-like parent
+     * @param string         $oldName the current property name
+     * @param string         $newName the replacement property name
+     */
+    private function renameParentClassDocblock(Param|Property $node, string $oldName, string $newName): void
+    {
+        $parent = $node->getAttribute('parent');
+
+        if ($parent instanceof ClassMethod) {
+            $parent = $parent->getAttribute('parent');
+        }
+
+        if (!$parent instanceof ClassLike) {
+            return;
+        }
+
+        $docComment = $parent->getDocComment();
+
+        if (null === $docComment) {
+            return;
+        }
+
+        $updatedText = $this->renameSupportedPropertyReferences(
+            text: $docComment->getText(),
+            oldName: $oldName,
+            newName: $newName,
+        );
+
+        if ($updatedText === $docComment->getText()) {
+            return;
+        }
+
+        $parent->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
     }
 }

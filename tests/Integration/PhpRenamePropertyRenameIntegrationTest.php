@@ -58,10 +58,14 @@ final class PhpRenamePropertyRenameIntegrationTest extends TestCase
         self::assertStringContainsString('public string $mailerTransport', $printedCode);
         self::assertStringContainsString('$mailer->mailerTransport', $printedCode);
         self::assertStringContainsString('@see self::$mailerTransport', $printedCode);
+        self::assertStringContainsString('@property string $mailerTransport', $printedCode);
+        self::assertStringContainsString('@property-read string $mailerTransport', $printedCode);
+        self::assertStringContainsString('@property-write string $mailerTransport', $printedCode);
         self::assertStringContainsString('Mentions transport in prose without changing free text.', $printedCode);
         self::assertStringNotContainsString('public string $transport', $printedCode);
         self::assertStringNotContainsString('$mailer->transport', $printedCode);
         self::assertStringNotContainsString('@see self::$transport', $printedCode);
+        self::assertStringNotContainsString('@property string $transport', $printedCode);
     }
 
     /**
@@ -110,6 +114,11 @@ final class PhpRenamePropertyRenameIntegrationTest extends TestCase
 
             namespace App;
 
+            /**
+             * @property string $transport
+             * @property-read string $transport
+             * @property-write string $transport
+             */
             final class Mailer
             {
                 /**

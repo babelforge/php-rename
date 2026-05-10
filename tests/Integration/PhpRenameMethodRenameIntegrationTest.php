@@ -84,7 +84,9 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
         self::assertCount(2, $result->plan->operations);
         self::assertCount(0, $result->diagnostics);
         self::assertStringContainsString('@see self::deliver()', $printedCode);
+        self::assertStringContainsString('@method void deliver()', $printedCode);
         self::assertStringNotContainsString('@see self::send()', $printedCode);
+        self::assertStringNotContainsString('@method void send()', $printedCode);
         self::assertStringContainsString('Calls send in prose without changing free text.', $printedCode);
     }
 
@@ -181,6 +183,9 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
 
             namespace App;
 
+            /**
+             * @method void send()
+             */
             final class Mailer
             {
                 /**

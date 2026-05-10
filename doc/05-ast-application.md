@@ -113,6 +113,9 @@ Current supported class docblock references:
 @param OldClass $value
 @return OldClass
 @throws OldClass
+@mixin OldClass
+@template T of OldClass
+@return Collection<OldClass>
 ```
 
 These references are renamed only on matched class-like owner declaration docblocks.
@@ -125,9 +128,12 @@ Current supported property docblock references:
 self::$oldName
 static::$oldName
 parent::$oldName
+@property Type $oldName
+@property-read Type $oldName
+@property-write Type $oldName
 ```
 
-These references are renamed only on matched property declaration docblocks through the parent `Property` node, or directly on promoted-property `Param` docblocks.
+These references are renamed only on matched property declaration docblocks through the parent `Property` node, directly on promoted-property `Param` docblocks, or direct class-like parent docblocks for `@property*` tags.
 
 Current supported class-constant docblock references:
 
@@ -143,9 +149,10 @@ Current supported function docblock references:
 
 ```php
 old_function()
+@see App\old_function()
 ```
 
-These references are renamed only on matched function declaration docblocks.
+These references are renamed only on matched function declaration docblocks, with structured `@see` support for fully-qualified function names.
 
 Current supported parameter docblock references:
 

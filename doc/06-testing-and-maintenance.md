@@ -37,6 +37,7 @@ The current test suite covers:
 - trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
 - explicit enum-case rename API coverage.
 - magic method semantic warning diagnostics.
+- expanded structured docblock references.
 
 ## Testing Direction
 
@@ -66,6 +67,7 @@ Priority cases:
 - named argument rename;
 - local parameter usage rename;
 - `@param` docblock rename;
+- structured docblock tags such as `@method`, `@property*`, `@mixin`, multi-line `@param`, and function `@see`;
 - parent and child method declarations;
 - trait method declaration;
 - trait alias and precedence adaptations;

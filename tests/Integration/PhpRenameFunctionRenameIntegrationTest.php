@@ -58,9 +58,11 @@ final class PhpRenameFunctionRenameIntegrationTest extends TestCase
         self::assertStringContainsString('function deliver_mail(', $printedCode);
         self::assertStringContainsString('deliver_mail()', $printedCode);
         self::assertStringContainsString('@see deliver_mail()', $printedCode);
+        self::assertStringContainsString('@see App\\deliver_mail() detailed reference', $printedCode);
         self::assertStringContainsString('Mentions send_mail in prose without changing free text.', $printedCode);
         self::assertStringNotContainsString('function send_mail(', $printedCode);
         self::assertStringNotContainsString('@see send_mail()', $printedCode);
+        self::assertStringNotContainsString('@see App\\send_mail()', $printedCode);
     }
 
     /**
@@ -79,6 +81,7 @@ final class PhpRenameFunctionRenameIntegrationTest extends TestCase
              * Mentions send_mail in prose without changing free text.
              *
              * @see send_mail()
+             * @see App\send_mail() detailed reference
              */
             function send_mail(): string
             {

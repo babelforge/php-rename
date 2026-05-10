@@ -97,7 +97,7 @@ final readonly class ParameterDocblockRenameApplier implements RenameMetadataApp
         $quotedOldName = preg_quote($oldName, '/');
 
         return preg_replace(
-            pattern: '/(@param\s+[^\r\n]*\s+)\$'.$quotedOldName.'\b/',
+            pattern: '/(@param\b(?:(?!\R\s*\*\s*@).)*?)\$'.$quotedOldName.'\b/s',
             replacement: '$1$'.$newName,
             subject: $text,
         ) ?? $text;

@@ -61,12 +61,18 @@ final class PhpRenameClassRenameIntegrationTest extends TestCase
         self::assertStringContainsString('new \\App\\TransactionalMailer()', $printedCode);
         self::assertStringContainsString('\\App\\TransactionalMailer::class', $printedCode);
         self::assertStringContainsString('@see TransactionalMailer', $printedCode);
+        self::assertStringContainsString('@mixin TransactionalMailer', $printedCode);
+        self::assertStringContainsString('@template T of TransactionalMailer', $printedCode);
+        self::assertStringContainsString('@return array<TransactionalMailer>', $printedCode);
         self::assertStringContainsString('Mentions Mailer in prose without changing free text.', $printedCode);
         self::assertStringNotContainsString('class Mailer', $printedCode);
         self::assertStringNotContainsString('extends Mailer', $printedCode);
         self::assertStringNotContainsString('new Mailer()', $printedCode);
         self::assertStringNotContainsString('\\App\\Mailer::class', $printedCode);
         self::assertStringNotContainsString('@see Mailer', $printedCode);
+        self::assertStringNotContainsString('@mixin Mailer', $printedCode);
+        self::assertStringNotContainsString('@template T of Mailer', $printedCode);
+        self::assertStringNotContainsString('@return array<Mailer>', $printedCode);
     }
 
     /**
@@ -85,6 +91,9 @@ final class PhpRenameClassRenameIntegrationTest extends TestCase
              * Mentions Mailer in prose without changing free text.
              *
              * @see Mailer
+             * @mixin Mailer
+             * @template T of Mailer
+             * @return array<Mailer>
              */
             class Mailer
             {

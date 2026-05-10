@@ -59,11 +59,13 @@ final class PhpRenameParameterRenameIntegrationTest extends TestCase
         self::assertCount(0, $result->diagnostics);
         self::assertSame(2, $this->updatedVirtualFileCount($result->virtualFiles));
         self::assertStringContainsString('@param string $emailMessage', $printedCode);
+        self::assertStringContainsString("array{\n     *     subject: string\n     * } \$emailMessage", $printedCode);
         self::assertStringContainsString('public function send(string $emailMessage, string $transport): void', $printedCode);
         self::assertStringContainsString('$this->store($emailMessage);', $printedCode);
         self::assertStringContainsString('emailMessage: $message', $printedCode);
         self::assertStringContainsString('emailMessage: \'hello\'', $printedCode);
         self::assertStringNotContainsString('@param string $message', $printedCode);
+        self::assertStringNotContainsString("array{\n     *     subject: string\n     * } \$message", $printedCode);
         self::assertStringNotContainsString('public function send(string $message, string $transport): void', $printedCode);
         self::assertStringNotContainsString('$this->store($message);', $printedCode);
     }
@@ -172,6 +174,9 @@ final class PhpRenameParameterRenameIntegrationTest extends TestCase
             {
                 /**
                  * @param string $message
+                 * @param array{
+                 *     subject: string
+                 * } $message
                  * @param string $transport
                  */
                 public function send(string $message, string $transport): void

@@ -10,6 +10,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpParser\Comment\Doc;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 
 /**
@@ -44,6 +45,47 @@ final readonly class MethodDocblockRenameApplier implements RenameMetadataApplie
         $docComment = $operation->node->getDocComment();
 
         if (null === $docComment) {
+            $this->renameParentClassDocblock($operation);
+
+            return;
+        }
+
+        $updatedText = $this->renameSupportedMethodReferences(
+            text: $docComment->getText(),
+            oldName: $operation->oldName,
+            newName: $operation->newName,
+        );
+
+        if ($updatedText === $docComment->getText()) {
+            $this->renameParentClassDocblock($operation);
+
+            return;
+        }
+
+        $operation->node->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
+        $this->renameParentClassDocblock($operation);
+    }
+
+    /**
+     * Applies method docblock reference changes on the direct class-like parent.
+     *
+     * @param RenameOperation $operation the rename operation to apply
+     */
+    private function renameParentClassDocblock(RenameOperation $operation): void
+    {
+        if (!$operation->node instanceof ClassMethod) {
+            return;
+        }
+
+        $classLike = $operation->node->getAttribute('parent');
+
+        if (!$classLike instanceof ClassLike) {
+            return;
+        }
+
+        $docComment = $classLike->getDocComment();
+
+        if (null === $docComment) {
             return;
         }
 
@@ -57,7 +99,7 @@ final readonly class MethodDocblockRenameApplier implements RenameMetadataApplie
             return;
         }
 
-        $operation->node->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
+        $classLike->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
     }
 
     /**
@@ -72,8 +114,8 @@ final readonly class MethodDocblockRenameApplier implements RenameMetadataApplie
         $quotedOldName = preg_quote($oldName, '/');
 
         return preg_replace(
-            pattern: '/\b(self|static|parent)::'.$quotedOldName.'(?=\s*\()/',
-            replacement: '$1::'.$newName,
+            pattern: '/(?:(\b(?:self|static|parent)::)'.$quotedOldName.'|(@method\s+[^\r\n]*\s+)'.$quotedOldName.')(?=\s*\()/',
+            replacement: '$1$2'.$newName,
             subject: $text,
         ) ?? $text;
     }

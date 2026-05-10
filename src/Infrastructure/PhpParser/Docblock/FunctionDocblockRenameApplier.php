@@ -69,12 +69,46 @@ final readonly class FunctionDocblockRenameApplier implements RenameMetadataAppl
      */
     private function renameSupportedFunctionReferences(string $text, string $oldName, string $newName): string
     {
-        $quotedOldName = preg_quote($oldName, '/');
+        $updatedText = $this->renameSupportedFunctionName($text, ltrim($oldName, '\\'), ltrim($newName, '\\'));
+
+        if (!str_contains($oldName, '\\')) {
+            return $updatedText;
+        }
+
+        return $this->renameSupportedFunctionName(
+            text: $updatedText,
+            oldName: $this->shortName($oldName),
+            newName: $this->shortName($newName),
+        );
+    }
+
+    /**
+     * Renames one supported function name form inside one docblock text.
+     *
+     * @param string $text    the docblock text
+     * @param string $oldName the current function name form
+     * @param string $newName the replacement function name form
+     */
+    private function renameSupportedFunctionName(string $text, string $oldName, string $newName): string
+    {
+        $quotedOldName = preg_quote(ltrim($oldName, '\\'), '/');
 
         return preg_replace(
-            pattern: '/(?<!::)\b'.$quotedOldName.'(?=\s*\()/',
-            replacement: $newName,
+            pattern: '/(@see\s+[^\r\n]*)\b'.$quotedOldName.'(?=\s*\()/',
+            replacement: '$1'.ltrim($newName, '\\'),
             subject: $text,
         ) ?? $text;
+    }
+
+    /**
+     * Returns the short name for one function name.
+     *
+     * @param string $name the function name
+     */
+    private function shortName(string $name): string
+    {
+        $parts = explode('\\', ltrim($name, '\\'));
+
+        return (string) end($parts);
     }
 }
