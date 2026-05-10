@@ -34,6 +34,7 @@ The current test suite covers:
 - case-sensitivity rules for rename conflict policy.
 - class-like and function import alias conflicts for FQCN renames, including normal imports, grouped imports, and explicit aliases.
 - promoted property renames, including constructor-local parameter usages and conflicts with normal or promoted properties.
+- trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
 
 ## Testing Direction
 
@@ -62,6 +63,7 @@ Priority cases:
 - `@param` docblock rename;
 - parent and child method declarations;
 - trait method declaration;
+- trait alias and precedence adaptations;
 - interface method declaration;
 - consumers resolved through typed variables;
 - unresolved dynamic calls reported as diagnostics.

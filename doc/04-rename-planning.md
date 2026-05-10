@@ -174,6 +174,7 @@ Conflict comparisons follow PHP naming semantics: class-like, function, and meth
 - calls `MemberGraphSourceNodeLocator::fromBuild($build)->method(...)`;
 - converts member declaration matches to declaration rename operations;
 - converts member usage matches to usage rename operations;
+- converts trait alias and trait precedence adaptation matches to usage rename operations;
 - emits a warning diagnostic when no source-node match is found.
 
 `MemberGraphClassRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::owner(...)`.

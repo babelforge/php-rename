@@ -89,6 +89,66 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures method renaming updates trait alias adaptation source references and projected consumer calls.
+     */
+    public function testItRenamesTraitAliasAdaptationSourcesAndProjectedConsumerCalls(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeTraitAliasFixture($srcDirectory.'/TraitAliasFixture.php');
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameMethod('App\\MailerTrait', 'send', 'deliver');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(3, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertSame(3, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString('function deliver(', $printedCode);
+        self::assertStringContainsString('deliver as traitSend', $printedCode);
+        self::assertStringContainsString('$mailer->deliver()', $printedCode);
+        self::assertStringContainsString('$mailer->traitSend()', $printedCode);
+        self::assertStringNotContainsString('function send(', $printedCode);
+        self::assertStringNotContainsString('send as traitSend', $printedCode);
+        self::assertStringNotContainsString('$mailer->send()', $printedCode);
+    }
+
+    /**
+     * Ensures method renaming updates trait precedence adaptation references.
+     */
+    public function testItRenamesTraitPrecedenceAdaptationReferences(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeTraitPrecedenceFixture($srcDirectory.'/TraitPrecedenceFixture.php');
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameMethod('App\\PrimaryMailerTrait', 'send', 'deliver');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(3, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertSame(3, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString('function deliver(', $printedCode);
+        self::assertStringContainsString('\\App\\PrimaryMailerTrait::deliver insteadof \\App\\SecondaryMailerTrait', $printedCode);
+        self::assertStringContainsString('$mailer->deliver()', $printedCode);
+        self::assertStringNotContainsString('\\App\\PrimaryMailerTrait::send insteadof \\App\\SecondaryMailerTrait', $printedCode);
+        self::assertStringNotContainsString('$mailer->send()', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -130,6 +190,87 @@ final class PhpRenameMethodRenameIntegrationTest extends TestCase
                  */
                 public function send(): void
                 {
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the trait alias fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeTraitAliasFixture(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            trait MailerTrait
+            {
+                public function send(): void
+                {
+                }
+            }
+
+            final class Mailer
+            {
+                use MailerTrait {
+                    send as traitSend;
+                }
+            }
+
+            final class Runner
+            {
+                public function run(Mailer $mailer): void
+                {
+                    $mailer->send();
+                    $mailer->traitSend();
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the trait precedence fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeTraitPrecedenceFixture(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            trait PrimaryMailerTrait
+            {
+                public function send(): void
+                {
+                }
+            }
+
+            trait SecondaryMailerTrait
+            {
+                public function send(): void
+                {
+                }
+            }
+
+            final class Mailer
+            {
+                use PrimaryMailerTrait;
+                use SecondaryMailerTrait {
+                    PrimaryMailerTrait::send insteadof SecondaryMailerTrait;
+                }
+            }
+
+            final class Runner
+            {
+                public function run(Mailer $mailer): void
+                {
+                    $mailer->send();
                 }
             }
             PHP);

@@ -90,6 +90,8 @@ final readonly class MemberGraphMethodRenamePlanner implements MethodRenamePlann
         return match ($role) {
             VirtualPhpSourceFileNodeMatchRole::MEMBER_DECLARATION => RenameOperationRole::DECLARATION,
             VirtualPhpSourceFileNodeMatchRole::MEMBER_USAGE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::TRAIT_ALIAS_ADAPTATION_SOURCE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::TRAIT_PRECEDENCE_ADAPTATION_METHOD => RenameOperationRole::USAGE,
             default => null,
         };
     }

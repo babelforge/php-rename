@@ -50,6 +50,11 @@ It also supports class renaming for:
 
 For class FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Usage `Name` nodes are replaced through their direct parent with the replacement short name, while the containing namespace gets a normal `use` import when needed. If importing would collide with an existing alias, the usage falls back to `PhpParser\Node\Name\FullyQualified`.
 
+It also supports trait adaptation method references returned by `member-graph`:
+
+- `PhpParser\Node\Stmt\TraitUseAdaptation\Alias`;
+- `PhpParser\Node\Stmt\TraitUseAdaptation\Precedence`.
+
 It also supports property renaming for:
 
 - `PhpParser\Node\Stmt\PropertyProperty`;

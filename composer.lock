@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/member-graph.git",
-                "reference": "a40fbae9de1538e7a92369e0fd95cc74fb1db220"
+                "reference": "1b8e721dccb83bd9c9664c65cf6dafc1d87e815a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/a40fbae9de1538e7a92369e0fd95cc74fb1db220",
-                "reference": "a40fbae9de1538e7a92369e0fd95cc74fb1db220",
+                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/1b8e721dccb83bd9c9664c65cf6dafc1d87e815a",
+                "reference": "1b8e721dccb83bd9c9664c65cf6dafc1d87e815a",
                 "shasum": ""
             },
             "require": {
@@ -106,10 +106,10 @@
             },
             "scripts": {
                 "cs": [
-                    "php-cs-fixer fix --dry-run --diff"
+                    "php-cs-fixer fix --dry-run --diff --sequential"
                 ],
                 "cs-fix": [
-                    "php-cs-fixer fix"
+                    "php-cs-fixer fix --sequential"
                 ],
                 "test": [
                     "phpunit"
@@ -130,7 +130,7 @@
                 "source": "https://github.com/php-noobs/member-graph/tree/main",
                 "issues": "https://github.com/php-noobs/member-graph/issues"
             },
-            "time": "2026-05-10T15:39:13+00:00"
+            "time": "2026-05-10T16:23:37+00:00"
         },
         {
             "name": "php-noobs/php-source-registry",

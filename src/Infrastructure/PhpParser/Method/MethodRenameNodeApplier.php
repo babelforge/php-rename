@@ -15,6 +15,8 @@ use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\TraitUseAdaptation\Alias;
+use PhpParser\Node\Stmt\TraitUseAdaptation\Precedence;
 
 /**
  * Applies method rename operations to method declaration and usage nodes.
@@ -52,6 +54,12 @@ final readonly class MethodRenameNodeApplier implements RenameNodeApplierInterfa
             && $node->name instanceof Identifier
         ) {
             $node->name = $this->replacementIdentifier($node->name, $operation->newName);
+
+            return true;
+        }
+
+        if ($node instanceof Alias || $node instanceof Precedence) {
+            $node->method = $this->replacementIdentifier($node->method, $operation->newName);
 
             return true;
         }
