@@ -43,6 +43,10 @@ It exposes:
 - `renameFunction()`;
 - `planFunctionFqcnRename()`;
 - `renameFunctionFqcn()`;
+- `planConstantRename()`;
+- `renameConstant()`;
+- `planConstantFqcnRename()`;
+- `renameConstantFqcn()`;
 - `planMethodParameterRename()`;
 - `renameMethodParameter()`;
 - `planFunctionParameterRename()`;
@@ -58,6 +62,8 @@ It exposes:
 - `EnumCaseRenamePlannerInterface`;
 - `FunctionRenamePlannerInterface`;
 - `FunctionFqcnRenamePlannerInterface`;
+- `ConstantRenamePlannerInterface`;
+- `ConstantFqcnRenamePlannerInterface`;
 - `ParameterRenamePlannerInterface`;
 - `RenamePlanApplierInterface`.
 
@@ -94,6 +100,7 @@ Current implementations:
 - `ClassConstantDocblockRenameApplier`.
 - `FunctionRenameNodeApplier`;
 - `FunctionDocblockRenameApplier`.
+- `ConstantRenameNodeApplier`;
 - `ParameterRenameNodeApplier`;
 - `ParameterDocblockRenameApplier`.
 

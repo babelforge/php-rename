@@ -1,6 +1,6 @@
 # Testing And Maintenance
 
-Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md)
+Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Rename Matrix](07-supported-rename-matrix.md)
 
 Tests should protect behavior before broadening the API.
 
@@ -27,6 +27,8 @@ The current test suite covers:
 - class-constant rename planning and AST application against a real `member-graph` build.
 - function rename planning and AST application against a real `member-graph` build.
 - function FQCN rename planning and AST application against a real `member-graph` build.
+- namespace-level constant rename planning and AST application against a real `member-graph` build.
+- namespace-level constant FQCN rename planning and AST application against a real `member-graph` build.
 - parameter rename planning and AST application against a real `member-graph` build.
 - conflict policy for blocking errors and report-only warnings across every supported rename family.
 - no-op rename planning across every supported rename family.
@@ -63,6 +65,10 @@ Priority cases:
 - direct function call;
 - function namespace move;
 - function import update;
+- direct namespace-level constant declaration;
+- direct namespace-level constant fetch;
+- constant namespace move;
+- constant import update;
 - parameter declaration rename;
 - named argument rename;
 - local parameter usage rename;
@@ -79,7 +85,7 @@ Priority cases:
 - invalid rename inputs throw before planning;
 - no-op renames produce warning diagnostics and empty plans.
 - class-like, function, and method conflicts are case-insensitive;
-- property, class-constant, and parameter conflicts are case-sensitive.
+- property, class-constant, enum-case, namespace-level constant, and parameter conflicts are case-sensitive.
 - FQCN renames report normal, grouped, and explicit-alias import conflicts, then fall back to fully-qualified usages when application is allowed.
 
 ## Maintenance Rules
@@ -93,4 +99,4 @@ Priority cases:
 - Keep physical file writing out of the first rename milestones.
 - Run PHPStan on both `src` and `tests` before considering a step complete.
 
-Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md)
+Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Rename Matrix](07-supported-rename-matrix.md)

@@ -6,7 +6,7 @@ This documentation describes the `PhpRename` component, how to use it, how it sh
 
 `PhpRename` is a PHP refactoring library focused on safe symbol renaming. It consumes `php-noobs/member-graph` for semantic dependency facts and owns rename planning plus AST mutation.
 
-The package currently contains the first public API and domain skeleton. Semantic planning and AST mutation are intentionally still incomplete.
+The package currently contains semantic planning and AST mutation for the supported rename matrix. Physical file writing, namespace-wide refactors, and cache transactions remain outside the current implementation.
 
 ## Pages
 
@@ -16,6 +16,7 @@ The package currently contains the first public API and domain skeleton. Semanti
 4. [Rename Planning](04-rename-planning.md)
 5. [AST Application](05-ast-application.md)
 6. [Testing And Maintenance](06-testing-and-maintenance.md)
+7. [Supported Rename Matrix](07-supported-rename-matrix.md)
 
 ## External Dependencies
 
@@ -27,34 +28,6 @@ The package currently contains the first public API and domain skeleton. Semanti
 
 ## Current Layout
 
-```text
-PhpRename/
-  Application/
-    Contract/
-      MethodRenamePlannerInterface.php
-      RenamePlanApplierInterface.php
-    PhpRename.php
-
-  Domain/
-    Rename/
-      MethodRenameRequest.php
-      RenameDiagnostic.php
-      RenameDiagnosticCollection.php
-      RenameDiagnosticSeverity.php
-      RenameOperation.php
-      RenameOperationCollection.php
-      RenameOperationRole.php
-      RenamePlan.php
-      RenameResult.php
-      RenameSymbolKind.php
-
-  Infrastructure/
-    MemberGraph/
-      MemberGraphMethodRenamePlanner.php
-    PhpParser/
-      AstRenamePlanApplier.php
-```
-
 The general rule is:
 
 - `Domain/` contains rename intents, plans, operations, results, and diagnostics.
@@ -63,4 +36,3 @@ The general rule is:
 - `Infrastructure/PhpParser/` applies rename plans to PHPParser AST nodes stored in virtual files.
 
 Navigation: [Next: Overview](01-overview.md)
-

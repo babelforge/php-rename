@@ -37,26 +37,23 @@ The current implementation provides:
 
 - `PhpRename` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
-- `planMethodRename()` and `renameMethod()` public methods;
+- plan/apply APIs for class-like owners, methods, properties, class constants, enum cases, functions, namespace-level constants, and parameters;
 - domain DTOs for plans, operations, results, and diagnostics;
 - contracts for planning and applying rename plans;
-- a placeholder `member-graph` planner;
-- a placeholder AST applier.
+- `member-graph` planners that convert source-node matches into rename operations;
+- PHPParser appliers that mutate matched AST nodes in virtual files;
+- conflict policy with blocking and report-only modes.
 
-The current implementation does not yet perform semantic method rename planning or AST mutation.
+The current implementation does not write physical files, move file paths, rename whole namespaces, or rebuild `member-graph` caches after mutation.
+
+## Boundary Decisions
+
+Namespace-wide rename is not currently a first-class `php-rename` operation. It is broader than a single symbol rename because it affects many declarations, imports, FQCN references, and often physical paths. That orchestration belongs to a future higher-level package such as `php-refactor`.
+
+FQCN symbol renames can update the namespace node of a matched declaration, but they intentionally do not move files on disk. A later writer or refactor layer can consume the updated virtual files and decide whether to move paths.
 
 ## Direction
 
-The first real feature should be method rename planning:
-
-```php
-$plan = $renamer->planMethodRename(
-    className: App\Service\UserMailer::class,
-    methodName: 'send',
-    newMethodName: 'deliver',
-);
-```
-
-The plan should include declarations and consumers resolved by `member-graph`, including parents, children, traits, and related usages when they are semantically known.
+The next larger concern is transaction/cache behavior: batching multiple rename operations, refreshing semantic facts after mutation, and rolling back virtual-file mutations when a batch fails.
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)
