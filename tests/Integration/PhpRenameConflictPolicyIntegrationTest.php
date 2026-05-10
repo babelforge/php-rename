@@ -85,6 +85,56 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures property conflicts include existing promoted properties.
+     */
+    public function testItHandlesExistingPromotedPropertyRenameConflicts(): void
+    {
+        $renamer = $this->renamerWithFixture('PromotedPropertyConflictFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public string $transport = 'smtp';
+
+                public function __construct(
+                    public string $mailerTransport = 'api',
+                ) {
+                }
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameProperty('App\\Mailer', 'transport', 'mailerTransport'), 'public string $transport');
+        $this->assertConflictReportsAndApplies($renamer->renameProperty('App\\Mailer', 'transport', 'mailerTransport', RenameConflictPolicy::REPORT), 'public string $mailerTransport');
+    }
+
+    /**
+     * Ensures promoted property renames conflict with existing normal properties.
+     */
+    public function testItHandlesPromotedPropertyRenameConflictsWithExistingNormalProperties(): void
+    {
+        $renamer = $this->renamerWithFixture('PromotedPropertyToNormalPropertyConflictFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public string $mailerTransport = 'api';
+
+                public function __construct(
+                    public string $transport = 'smtp',
+                ) {
+                }
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameProperty('App\\Mailer', 'transport', 'mailerTransport'), 'public string $transport');
+        $this->assertConflictReportsAndApplies($renamer->renameProperty('App\\Mailer', 'transport', 'mailerTransport', RenameConflictPolicy::REPORT), 'public string $mailerTransport');
+    }
+
+    /**
      * Ensures class-constant conflicts block application by default and can be reported as warnings.
      */
     public function testItHandlesClassConstantRenameConflicts(): void

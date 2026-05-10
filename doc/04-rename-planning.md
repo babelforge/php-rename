@@ -180,7 +180,7 @@ Conflict comparisons follow PHP naming semantics: class-like, function, and meth
 
 `MemberGraphClassFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::owner(...)`, but stores fully-qualified old and new owner names in the rename operations.
 
-`MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
+`MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`. For promoted properties, it also consumes `PROMOTED_PROPERTY_PARAMETER_LOCAL_USAGE` matches returned by `member-graph` for constructor-local parameter usages.
 
 `MemberGraphClassConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`.
 
@@ -208,6 +208,7 @@ Examples:
 
 - `ClassMethod` match: the method docblock is eligible.
 - `Param` match: the parent `ClassMethod` or `Function_` docblock is eligible.
+- promoted-property `Param` match: the `Param` docblock itself is eligible.
 - `PropertyProperty` match: the parent `Property` docblock is eligible.
 - `Const_` match: the parent `ClassConst` docblock is eligible.
 

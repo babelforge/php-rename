@@ -55,7 +55,8 @@ It also supports property renaming for:
 - `PhpParser\Node\Stmt\PropertyProperty`;
 - `PhpParser\Node\Expr\PropertyFetch`;
 - `PhpParser\Node\Expr\StaticPropertyFetch`;
-- promoted-property `PhpParser\Node\Param` declarations.
+- promoted-property `PhpParser\Node\Param` declarations;
+- promoted-property constructor-local `PhpParser\Node\Expr\Variable` usages returned by `member-graph`.
 
 It also supports class-constant renaming for:
 
@@ -116,7 +117,7 @@ static::$oldName
 parent::$oldName
 ```
 
-These references are renamed only on matched property declaration docblocks through the parent `Property` node.
+These references are renamed only on matched property declaration docblocks through the parent `Property` node, or directly on promoted-property `Param` docblocks.
 
 Current supported class-constant docblock references:
 

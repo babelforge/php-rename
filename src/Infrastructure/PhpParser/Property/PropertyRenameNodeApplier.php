@@ -67,6 +67,12 @@ final readonly class PropertyRenameNodeApplier implements RenameNodeApplierInter
             return true;
         }
 
+        if ($node instanceof Variable && is_string($node->name)) {
+            $node->name = $operation->newName;
+
+            return true;
+        }
+
         $context->diagnostics->add(new RenameDiagnostic(
             severity: RenameDiagnosticSeverity::WARNING,
             message: sprintf('Unsupported property rename node "%s".', $node::class),

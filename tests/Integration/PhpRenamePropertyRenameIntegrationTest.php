@@ -65,6 +65,40 @@ final class PhpRenamePropertyRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures promoted property declarations, property usages, and supported docblock references are renamed.
+     */
+    public function testItRenamesPromotedPropertyDeclarationUsageAndSupportedDocblockReferences(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writePromotedMailerFile($srcDirectory.'/Mailer.php');
+        $this->writeRunnerFile($srcDirectory.'/Runner.php');
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameProperty('App\\Mailer', 'transport', 'mailerTransport');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(4, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertSame(2, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString('public string $mailerTransport', $printedCode);
+        self::assertStringContainsString('$this->mailerTransport = $mailerTransport;', $printedCode);
+        self::assertStringContainsString('$mailer->mailerTransport', $printedCode);
+        self::assertStringContainsString('@see self::$mailerTransport', $printedCode);
+        self::assertStringContainsString('Mentions transport in prose without changing free text.', $printedCode);
+        self::assertStringNotContainsString('public string $transport', $printedCode);
+        self::assertStringNotContainsString('$this->transport = $transport;', $printedCode);
+        self::assertStringNotContainsString('$mailer->transport', $printedCode);
+        self::assertStringNotContainsString('@see self::$transport', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -84,6 +118,34 @@ final class PhpRenamePropertyRenameIntegrationTest extends TestCase
                  * @see self::$transport
                  */
                 public string $transport = 'smtp';
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the promoted-property mailer fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writePromotedMailerFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function __construct(
+                    /**
+                     * Mentions transport in prose without changing free text.
+                     *
+                     * @see self::$transport
+                     */
+                    public string $transport = 'smtp',
+                ) {
+                    $this->transport = $transport;
+                }
             }
             PHP);
     }

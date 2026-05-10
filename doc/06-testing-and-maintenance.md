@@ -33,6 +33,7 @@ The current test suite covers:
 - request validation for invalid identifiers and FQCN-like names.
 - case-sensitivity rules for rename conflict policy.
 - class-like and function import alias conflicts for FQCN renames, including normal imports, grouped imports, and explicit aliases.
+- promoted property renames, including constructor-local parameter usages and conflicts with normal or promoted properties.
 
 ## Testing Direction
 
@@ -47,6 +48,8 @@ Priority cases:
 - direct method call;
 - direct property declaration;
 - direct property fetch;
+- promoted property declaration;
+- promoted property constructor-local parameter usage;
 - direct class-constant declaration;
 - direct class-constant fetch;
 - direct function declaration;

@@ -90,6 +90,7 @@ final readonly class MemberGraphPropertyRenamePlanner implements PropertyRenameP
         return match ($role) {
             VirtualPhpSourceFileNodeMatchRole::MEMBER_DECLARATION => RenameOperationRole::DECLARATION,
             VirtualPhpSourceFileNodeMatchRole::MEMBER_USAGE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::PROMOTED_PROPERTY_PARAMETER_LOCAL_USAGE => RenameOperationRole::USAGE,
             default => null,
         };
     }

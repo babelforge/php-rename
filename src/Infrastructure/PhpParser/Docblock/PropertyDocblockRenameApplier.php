@@ -10,6 +10,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
 use PhpParser\Comment\Doc;
+use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
 
@@ -27,7 +28,7 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
     {
         return RenameSymbolKind::PROPERTY === $operation->symbolKind
             && RenameOperationRole::DECLARATION === $operation->role
-            && $operation->node instanceof PropertyProperty;
+            && ($operation->node instanceof PropertyProperty || $operation->node instanceof Param);
     }
 
     /**
@@ -38,13 +39,31 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
      */
     public function apply(RenameOperation $operation, RenameApplicationContext $context): void
     {
+        if ($operation->node instanceof Param) {
+            $this->renameNodeDocblock($operation->node, $operation->oldName, $operation->newName);
+
+            return;
+        }
+
         $property = $operation->node->getAttribute('parent');
 
         if (!$property instanceof Property) {
             return;
         }
 
-        $docComment = $property->getDocComment();
+        $this->renameNodeDocblock($property, $operation->oldName, $operation->newName);
+    }
+
+    /**
+     * Renames supported property references on one node docblock.
+     *
+     * @param Param|Property $node    the node owning the docblock
+     * @param string         $oldName the current property name
+     * @param string         $newName the replacement property name
+     */
+    private function renameNodeDocblock(Param|Property $node, string $oldName, string $newName): void
+    {
+        $docComment = $node->getDocComment();
 
         if (null === $docComment) {
             return;
@@ -52,15 +71,15 @@ final readonly class PropertyDocblockRenameApplier implements RenameMetadataAppl
 
         $updatedText = $this->renameSupportedPropertyReferences(
             text: $docComment->getText(),
-            oldName: $operation->oldName,
-            newName: $operation->newName,
+            oldName: $oldName,
+            newName: $newName,
         );
 
         if ($updatedText === $docComment->getText()) {
             return;
         }
 
-        $property->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
+        $node->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
     }
 
     /**
