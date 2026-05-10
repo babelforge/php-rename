@@ -21,9 +21,11 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassConstantDocblockRe
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\FunctionDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\MethodDocblockRenameApplier;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ParameterDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\PropertyDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Function_\FunctionRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Method\MethodRenameNodeApplier;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Parameter\ParameterRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Property\PropertyRenameNodeApplier;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
 
@@ -58,6 +60,7 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
             new PropertyRenameNodeApplier(),
             new ClassConstantRenameNodeApplier(),
             new FunctionRenameNodeApplier(),
+            new ParameterRenameNodeApplier(),
         ];
         $this->metadataAppliers = $metadataAppliers ?? [
             new ClassDocblockRenameApplier(),
@@ -65,6 +68,7 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
             new PropertyDocblockRenameApplier(),
             new ClassConstantDocblockRenameApplier(),
             new FunctionDocblockRenameApplier(),
+            new ParameterDocblockRenameApplier(),
         ];
     }
 
@@ -77,6 +81,15 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
     public function apply(RenamePlan $plan, MemberDependencyGraphBuild $build): RenameResult
     {
         $diagnostics = RenameDiagnosticCollection::empty();
+
+        if ($plan->diagnostics->hasErrors()) {
+            return new RenameResult(
+                plan: $plan,
+                virtualFiles: $build->virtualFiles,
+                diagnostics: $diagnostics,
+            );
+        }
+
         $context = new RenameApplicationContext($diagnostics);
         /** @var array<string, VirtualPhpSourceFile> $updatedVirtualFiles */
         $updatedVirtualFiles = [];

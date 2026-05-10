@@ -37,6 +37,20 @@ final class RenameDiagnosticCollection implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Indicates whether the collection contains at least one error diagnostic.
+     */
+    public function hasErrors(): bool
+    {
+        foreach ($this->diagnostics as $diagnostic) {
+            if (RenameDiagnosticSeverity::ERROR === $diagnostic->severity) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the collection iterator.
      *
      * @return \Traversable<RenameDiagnostic>

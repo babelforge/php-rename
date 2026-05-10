@@ -33,6 +33,7 @@ final readonly class MemberGraphClassRenamePlanner implements ClassRenamePlanner
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
+        new MemberGraphRenameConflictGuard()->reportClassConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->owner($request->className);
 

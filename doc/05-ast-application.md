@@ -34,6 +34,8 @@ The applier returns a `RenameResult` containing:
 
 ## Current Implementation
 
+Plans containing error diagnostics are not applied. This lets planning-time conflict policy block unsafe mutations while still returning the planned diagnostics to the caller.
+
 `AstRenamePlanApplier` currently supports method renaming for:
 
 - `PhpParser\Node\Stmt\ClassMethod`;
@@ -65,6 +67,12 @@ It also supports function renaming for:
 
 - `PhpParser\Node\Stmt\Function_`;
 - `PhpParser\Node\Expr\FuncCall`.
+
+It also supports parameter renaming for:
+
+- `PhpParser\Node\Param`;
+- `PhpParser\Node\Arg` named arguments.
+- `PhpParser\Node\Expr\Variable` local parameter usages returned by `member-graph`.
 
 For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 
@@ -127,6 +135,14 @@ old_function()
 ```
 
 These references are renamed only on matched function declaration docblocks.
+
+Current supported parameter docblock references:
+
+```php
+@param Type $oldName
+```
+
+These references are renamed only on the direct function-like parent docblock of a matched parameter declaration.
 
 For function FQCN rename, structured docblock references can also rename fully-qualified function references such as `@see App\old_function()`.
 

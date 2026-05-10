@@ -98,6 +98,20 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The difference is the replacement contract: `renameFunctionFqcn()` receives a fully-qualified replacement function name. The planner still does not discover additional candidates by itself.
 
+For parameter renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->parameter('App\\Mailer', 'send', 'message', 0);
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->parameter('', 'App\\send_mail', 'message', 0);
+```
+
+The declaration index is optional. When provided, the locator must match both the parameter name and the zero-based declaration index.
+
 ## Method Rename Scope
 
 For method renaming, the default scope is semantic.
@@ -130,6 +144,23 @@ Examples:
 - dynamic call is ambiguous;
 - source node cannot be located.
 
+## Conflict Policy
+
+`php-rename` owns conflict policy. `member-graph` exposes neutral scope facts; planners decide whether those facts produce diagnostics.
+
+The default policy is `RenameConflictPolicy::FAIL`, which creates an error diagnostic for a detected conflict. `AstRenamePlanApplier` does not apply plans containing error diagnostics.
+
+`RenameConflictPolicy::REPORT` creates a warning diagnostic and keeps the plan applicable.
+
+Current conflict checks consume `member-graph` scope facts for:
+
+- method declarations in the resolved owner scope;
+- property declarations in the resolved owner scope;
+- class constants and enum cases in the resolved owner scope;
+- class-like declarations in the target namespace;
+- function declarations in the target namespace;
+- same-signature parameters and local variables in the declaring body.
+
 ## Current Implementation
 
 `MemberGraphMethodRenamePlanner` currently:
@@ -150,6 +181,10 @@ Examples:
 `MemberGraphFunctionRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`.
 
 `MemberGraphFunctionFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`, but stores fully-qualified old and new function names in the rename operations.
+
+`MemberGraphParameterRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::parameter(...)`.
+
+Each planner also asks `MemberGraphRenameConflictGuard` to convert neutral scope facts from `MemberGraphSymbolScopeLocator` or `MemberGraphSourceNodeLocator::parameterScope(...)` into policy-driven diagnostics.
 
 The planner intentionally does not search source code by itself.
 

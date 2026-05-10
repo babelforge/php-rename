@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
+use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+
 /**
  * Describes a property rename intent anchored to a class name.
  */
@@ -12,9 +14,10 @@ final readonly class PropertyRenameRequest implements RenameRequestInterface
     /**
      * Constructor.
      *
-     * @param string $className       the class name that anchors the property rename
-     * @param string $propertyName    the current property name
-     * @param string $newPropertyName the replacement property name
+     * @param string               $className       the class name that anchors the property rename
+     * @param string               $propertyName    the current property name
+     * @param string               $newPropertyName the replacement property name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
@@ -22,6 +25,7 @@ final readonly class PropertyRenameRequest implements RenameRequestInterface
         public string $className,
         public string $propertyName,
         public string $newPropertyName,
+        public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
         $this->guardNotEmpty($className, 'className');
         $this->guardNotEmpty($propertyName, 'propertyName');

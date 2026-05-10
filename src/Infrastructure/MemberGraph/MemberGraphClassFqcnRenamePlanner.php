@@ -33,6 +33,7 @@ final readonly class MemberGraphClassFqcnRenamePlanner implements ClassFqcnRenam
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
+        new MemberGraphRenameConflictGuard()->reportClassFqcnConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->owner($request->className);
 

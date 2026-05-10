@@ -33,6 +33,7 @@ final readonly class MemberGraphClassConstantRenamePlanner implements ClassConst
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
+        new MemberGraphRenameConflictGuard()->reportClassConstantConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->classConstant($request->className, $request->constantName);
 

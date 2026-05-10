@@ -4,6 +4,25 @@ Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | 
 
 The public API should remain small and composable.
 
+## Conflict Policy
+
+Rename methods accept an optional conflict policy:
+
+```php
+use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+
+$result = $renamer->renameMethod(
+    className: App\Service\UserMailer::class,
+    methodName: 'send',
+    newMethodName: 'deliver',
+    conflictPolicy: RenameConflictPolicy::REPORT,
+);
+```
+
+The default policy is `RenameConflictPolicy::FAIL`. It emits an error diagnostic when `member-graph` scope facts show that the replacement name already exists in the relevant semantic scope, and the plan is not applied.
+
+`RenameConflictPolicy::REPORT` emits a warning diagnostic and keeps the plan applicable.
+
 ## Create From Directories
 
 Use this mode when `PhpRename` should build its own `member-graph` input:
@@ -150,6 +169,29 @@ $result = $renamer->renameFunction(
 ```
 
 The first function rename slice does not move functions between namespaces and does not rewrite `use function` imports.
+
+## Plan And Apply Parameter Renames
+
+Method and function parameter renames support an optional zero-based declaration index:
+
+```php
+$result = $renamer->renameMethodParameter(
+    className: App\Service\UserMailer::class,
+    methodName: 'send',
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+    parameterIndex: 0,
+);
+
+$result = $renamer->renameFunctionParameter(
+    functionName: 'App\\send_mail',
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+    parameterIndex: 0,
+);
+```
+
+When `parameterIndex` is provided, `member-graph` must match both the parameter name and its declaration index. The current slice mutates parameter declarations, named arguments, local parameter usages returned by `member-graph`, and supported `@param` docblock tags.
 
 ## Plan And Apply A Function FQCN Rename
 

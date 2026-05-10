@@ -27,6 +27,8 @@ The current test suite covers:
 - class-constant rename planning and AST application against a real `member-graph` build.
 - function rename planning and AST application against a real `member-graph` build.
 - function FQCN rename planning and AST application against a real `member-graph` build.
+- parameter rename planning and AST application against a real `member-graph` build.
+- conflict policy for blocking errors and report-only warnings across every supported rename family.
 
 ## Testing Direction
 
@@ -47,11 +49,17 @@ Priority cases:
 - direct function call;
 - function namespace move;
 - function import update;
+- parameter declaration rename;
+- named argument rename;
+- local parameter usage rename;
+- `@param` docblock rename;
 - parent and child method declarations;
 - trait method declaration;
 - interface method declaration;
 - consumers resolved through typed variables;
 - unresolved dynamic calls reported as diagnostics.
+- conflict policy blocks application when configured as `FAIL`;
+- conflict policy reports warnings while allowing application when configured as `REPORT`.
 
 ## Maintenance Rules
 

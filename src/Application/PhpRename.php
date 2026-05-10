@@ -12,8 +12,10 @@ use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
+use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
@@ -22,6 +24,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassConstantRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassFqcnRenamePlanner;
@@ -29,6 +32,7 @@ use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphParameterRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphPropertyRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\AstRenamePlanApplier;
 
@@ -48,6 +52,7 @@ final readonly class PhpRename
      * @param ClassFqcnRenamePlannerInterface     $classFqcnRenamePlanner     the class FQCN rename planner
      * @param FunctionRenamePlannerInterface      $functionRenamePlanner      the function rename planner
      * @param FunctionFqcnRenamePlannerInterface  $functionFqcnRenamePlanner  the function FQCN rename planner
+     * @param ParameterRenamePlannerInterface     $parameterRenamePlanner     the parameter rename planner
      * @param RenamePlanApplierInterface          $renamePlanApplier          the rename plan applier
      */
     private function __construct(
@@ -59,6 +64,7 @@ final readonly class PhpRename
         private ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner,
         private FunctionRenamePlannerInterface $functionRenamePlanner,
         private FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner,
+        private ParameterRenamePlannerInterface $parameterRenamePlanner,
         private RenamePlanApplierInterface $renamePlanApplier,
     ) {
     }
@@ -97,6 +103,7 @@ final readonly class PhpRename
      * @param ClassFqcnRenamePlannerInterface|null     $classFqcnRenamePlanner     the optional class FQCN rename planner override
      * @param FunctionRenamePlannerInterface|null      $functionRenamePlanner      the optional function rename planner override
      * @param FunctionFqcnRenamePlannerInterface|null  $functionFqcnRenamePlanner  the optional function FQCN rename planner override
+     * @param ParameterRenamePlannerInterface|null     $parameterRenamePlanner     the optional parameter rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
@@ -108,6 +115,7 @@ final readonly class PhpRename
         ?ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner = null,
         ?FunctionRenamePlannerInterface $functionRenamePlanner = null,
         ?FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner = null,
+        ?ParameterRenamePlannerInterface $parameterRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
@@ -118,6 +126,7 @@ final readonly class PhpRename
             classFqcnRenamePlanner: $classFqcnRenamePlanner ?? new MemberGraphClassFqcnRenamePlanner(),
             functionRenamePlanner: $functionRenamePlanner ?? new MemberGraphFunctionRenamePlanner(),
             functionFqcnRenamePlanner: $functionFqcnRenamePlanner ?? new MemberGraphFunctionFqcnRenamePlanner(),
+            parameterRenamePlanner: $parameterRenamePlanner ?? new MemberGraphParameterRenamePlanner(),
             renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
         );
     }
@@ -125,16 +134,21 @@ final readonly class PhpRename
     /**
      * Plans a semantic method rename.
      *
-     * @param string $className     the class name that anchors the method rename
-     * @param string $methodName    the current method name
-     * @param string $newMethodName the replacement method name
+     * @param string               $className      the class name that anchors the method rename
+     * @param string               $methodName     the current method name
+     * @param string               $newMethodName  the replacement method name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function planMethodRename(string $className, string $methodName, string $newMethodName): RenamePlan
-    {
+    public function planMethodRename(
+        string $className,
+        string $methodName,
+        string $newMethodName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->methodRenamePlanner->plan(
-            request: new MethodRenameRequest($className, $methodName, $newMethodName),
+            request: new MethodRenameRequest($className, $methodName, $newMethodName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -142,16 +156,21 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic method rename to virtual file AST nodes.
      *
-     * @param string $className     the class name that anchors the method rename
-     * @param string $methodName    the current method name
-     * @param string $newMethodName the replacement method name
+     * @param string               $className      the class name that anchors the method rename
+     * @param string               $methodName     the current method name
+     * @param string               $newMethodName  the replacement method name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function renameMethod(string $className, string $methodName, string $newMethodName): RenameResult
-    {
+    public function renameMethod(
+        string $className,
+        string $methodName,
+        string $newMethodName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planMethodRename($className, $methodName, $newMethodName),
+            plan: $this->planMethodRename($className, $methodName, $newMethodName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -159,16 +178,21 @@ final readonly class PhpRename
     /**
      * Plans a semantic property rename.
      *
-     * @param string $className       the class name that anchors the property rename
-     * @param string $propertyName    the current property name
-     * @param string $newPropertyName the replacement property name
+     * @param string               $className       the class name that anchors the property rename
+     * @param string               $propertyName    the current property name
+     * @param string               $newPropertyName the replacement property name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function planPropertyRename(string $className, string $propertyName, string $newPropertyName): RenamePlan
-    {
+    public function planPropertyRename(
+        string $className,
+        string $propertyName,
+        string $newPropertyName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->propertyRenamePlanner->plan(
-            request: new PropertyRenameRequest($className, $propertyName, $newPropertyName),
+            request: new PropertyRenameRequest($className, $propertyName, $newPropertyName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -176,16 +200,21 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic property rename to virtual file AST nodes.
      *
-     * @param string $className       the class name that anchors the property rename
-     * @param string $propertyName    the current property name
-     * @param string $newPropertyName the replacement property name
+     * @param string               $className       the class name that anchors the property rename
+     * @param string               $propertyName    the current property name
+     * @param string               $newPropertyName the replacement property name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function renameProperty(string $className, string $propertyName, string $newPropertyName): RenameResult
-    {
+    public function renameProperty(
+        string $className,
+        string $propertyName,
+        string $newPropertyName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planPropertyRename($className, $propertyName, $newPropertyName),
+            plan: $this->planPropertyRename($className, $propertyName, $newPropertyName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -193,16 +222,21 @@ final readonly class PhpRename
     /**
      * Plans a semantic class-constant rename.
      *
-     * @param string $className       the class name that anchors the class-constant rename
-     * @param string $constantName    the current class-constant name
-     * @param string $newConstantName the replacement class-constant name
+     * @param string               $className       the class name that anchors the class-constant rename
+     * @param string               $constantName    the current class-constant name
+     * @param string               $newConstantName the replacement class-constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function planClassConstantRename(string $className, string $constantName, string $newConstantName): RenamePlan
-    {
+    public function planClassConstantRename(
+        string $className,
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->classConstantRenamePlanner->plan(
-            request: new ClassConstantRenameRequest($className, $constantName, $newConstantName),
+            request: new ClassConstantRenameRequest($className, $constantName, $newConstantName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -210,16 +244,21 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic class-constant rename to virtual file AST nodes.
      *
-     * @param string $className       the class name that anchors the class-constant rename
-     * @param string $constantName    the current class-constant name
-     * @param string $newConstantName the replacement class-constant name
+     * @param string               $className       the class name that anchors the class-constant rename
+     * @param string               $constantName    the current class-constant name
+     * @param string               $newConstantName the replacement class-constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is empty
      */
-    public function renameClassConstant(string $className, string $constantName, string $newConstantName): RenameResult
-    {
+    public function renameClassConstant(
+        string $className,
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planClassConstantRename($className, $constantName, $newConstantName),
+            plan: $this->planClassConstantRename($className, $constantName, $newConstantName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -227,15 +266,19 @@ final readonly class PhpRename
     /**
      * Plans a semantic class-like owner rename.
      *
-     * @param string $className    the current fully-qualified class-like owner name
-     * @param string $newClassName the replacement short class-like owner name
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement short class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function planClassRename(string $className, string $newClassName): RenamePlan
-    {
+    public function planClassRename(
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->classRenamePlanner->plan(
-            request: new ClassRenameRequest($className, $newClassName),
+            request: new ClassRenameRequest($className, $newClassName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -243,15 +286,19 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic class-like owner rename to virtual file AST nodes.
      *
-     * @param string $className    the current fully-qualified class-like owner name
-     * @param string $newClassName the replacement short class-like owner name
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement short class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function renameClass(string $className, string $newClassName): RenameResult
-    {
+    public function renameClass(
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planClassRename($className, $newClassName),
+            plan: $this->planClassRename($className, $newClassName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -259,15 +306,19 @@ final readonly class PhpRename
     /**
      * Plans a semantic class-like owner rename to another fully-qualified name.
      *
-     * @param string $className    the current fully-qualified class-like owner name
-     * @param string $newClassName the replacement fully-qualified class-like owner name
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement fully-qualified class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function planClassFqcnRename(string $className, string $newClassName): RenamePlan
-    {
+    public function planClassFqcnRename(
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->classFqcnRenamePlanner->plan(
-            request: new ClassFqcnRenameRequest($className, $newClassName),
+            request: new ClassFqcnRenameRequest($className, $newClassName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -275,15 +326,19 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic class-like owner FQCN rename to virtual file AST nodes.
      *
-     * @param string $className    the current fully-qualified class-like owner name
-     * @param string $newClassName the replacement fully-qualified class-like owner name
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement fully-qualified class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function renameClassFqcn(string $className, string $newClassName): RenameResult
-    {
+    public function renameClassFqcn(
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planClassFqcnRename($className, $newClassName),
+            plan: $this->planClassFqcnRename($className, $newClassName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -291,15 +346,19 @@ final readonly class PhpRename
     /**
      * Plans a semantic function rename.
      *
-     * @param string $functionName    the current fully-qualified function name
-     * @param string $newFunctionName the replacement short function name
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement short function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function planFunctionRename(string $functionName, string $newFunctionName): RenamePlan
-    {
+    public function planFunctionRename(
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->functionRenamePlanner->plan(
-            request: new FunctionRenameRequest($functionName, $newFunctionName),
+            request: new FunctionRenameRequest($functionName, $newFunctionName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -307,15 +366,19 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic function rename to virtual file AST nodes.
      *
-     * @param string $functionName    the current fully-qualified function name
-     * @param string $newFunctionName the replacement short function name
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement short function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function renameFunction(string $functionName, string $newFunctionName): RenameResult
-    {
+    public function renameFunction(
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planFunctionRename($functionName, $newFunctionName),
+            plan: $this->planFunctionRename($functionName, $newFunctionName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -323,15 +386,19 @@ final readonly class PhpRename
     /**
      * Plans a semantic function rename to another fully-qualified name.
      *
-     * @param string $functionName    the current fully-qualified function name
-     * @param string $newFunctionName the replacement fully-qualified function name
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement fully-qualified function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function planFunctionFqcnRename(string $functionName, string $newFunctionName): RenamePlan
-    {
+    public function planFunctionFqcnRename(
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
         return $this->functionFqcnRenamePlanner->plan(
-            request: new FunctionFqcnRenameRequest($functionName, $newFunctionName),
+            request: new FunctionFqcnRenameRequest($functionName, $newFunctionName, $conflictPolicy),
             build: $this->build,
         );
     }
@@ -339,15 +406,119 @@ final readonly class PhpRename
     /**
      * Plans and applies a semantic function FQCN rename to virtual file AST nodes.
      *
-     * @param string $functionName    the current fully-qualified function name
-     * @param string $newFunctionName the replacement fully-qualified function name
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement fully-qualified function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
-    public function renameFunctionFqcn(string $functionName, string $newFunctionName): RenameResult
-    {
+    public function renameFunctionFqcn(
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
         return $this->renamePlanApplier->apply(
-            plan: $this->planFunctionFqcnRename($functionName, $newFunctionName),
+            plan: $this->planFunctionFqcnRename($functionName, $newFunctionName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic method parameter rename.
+     *
+     * @param string               $className        the method owner FQCN
+     * @param string               $methodName       the method name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planMethodParameterRename(
+        string $className,
+        string $methodName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
+        return $this->parameterRenamePlanner->plan(
+            request: new ParameterRenameRequest($className, $methodName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic method parameter rename to virtual file AST nodes.
+     *
+     * @param string               $className        the method owner FQCN
+     * @param string               $methodName       the method name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameMethodParameter(
+        string $className,
+        string $methodName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planMethodParameterRename($className, $methodName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic function parameter rename.
+     *
+     * @param string               $functionName     the fully-qualified function name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planFunctionParameterRename(
+        string $functionName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
+        return $this->parameterRenamePlanner->plan(
+            request: new ParameterRenameRequest('', $functionName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic function parameter rename to virtual file AST nodes.
+     *
+     * @param string               $functionName     the fully-qualified function name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameFunctionParameter(
+        string $functionName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planFunctionParameterRename($functionName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
             build: $this->build,
         );
     }

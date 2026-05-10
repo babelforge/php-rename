@@ -33,6 +33,7 @@ final readonly class MemberGraphFunctionRenamePlanner implements FunctionRenameP
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
+        new MemberGraphRenameConflictGuard()->reportFunctionConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->function($request->functionName);
 

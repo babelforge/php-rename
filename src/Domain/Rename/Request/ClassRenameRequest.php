@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
+use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+
 /**
  * Describes a class-like owner rename intent.
  */
@@ -12,14 +14,16 @@ final readonly class ClassRenameRequest implements RenameRequestInterface
     /**
      * Constructor.
      *
-     * @param string $className    the current fully-qualified class-like owner name
-     * @param string $newClassName the replacement short class-like owner name
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement short class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
      *
      * @throws \InvalidArgumentException when one rename input is invalid
      */
     public function __construct(
         public string $className,
         public string $newClassName,
+        public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
         $this->guardNotEmpty($className, 'className');
         $this->guardNotEmpty($newClassName, 'newClassName');
