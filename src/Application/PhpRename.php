@@ -7,7 +7,9 @@ namespace PhpNoobs\PhpRename\Application;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
@@ -15,12 +17,16 @@ use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassConstantRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphPropertyRenamePlanner;
@@ -39,7 +45,9 @@ final readonly class PhpRename
      * @param PropertyRenamePlannerInterface      $propertyRenamePlanner      the property rename planner
      * @param ClassConstantRenamePlannerInterface $classConstantRenamePlanner the class-constant rename planner
      * @param ClassRenamePlannerInterface         $classRenamePlanner         the class rename planner
+     * @param ClassFqcnRenamePlannerInterface     $classFqcnRenamePlanner     the class FQCN rename planner
      * @param FunctionRenamePlannerInterface      $functionRenamePlanner      the function rename planner
+     * @param FunctionFqcnRenamePlannerInterface  $functionFqcnRenamePlanner  the function FQCN rename planner
      * @param RenamePlanApplierInterface          $renamePlanApplier          the rename plan applier
      */
     private function __construct(
@@ -48,7 +56,9 @@ final readonly class PhpRename
         private PropertyRenamePlannerInterface $propertyRenamePlanner,
         private ClassConstantRenamePlannerInterface $classConstantRenamePlanner,
         private ClassRenamePlannerInterface $classRenamePlanner,
+        private ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner,
         private FunctionRenamePlannerInterface $functionRenamePlanner,
+        private FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner,
         private RenamePlanApplierInterface $renamePlanApplier,
     ) {
     }
@@ -84,7 +94,9 @@ final readonly class PhpRename
      * @param PropertyRenamePlannerInterface|null      $propertyRenamePlanner      the optional property rename planner override
      * @param ClassConstantRenamePlannerInterface|null $classConstantRenamePlanner the optional class-constant rename planner override
      * @param ClassRenamePlannerInterface|null         $classRenamePlanner         the optional class rename planner override
+     * @param ClassFqcnRenamePlannerInterface|null     $classFqcnRenamePlanner     the optional class FQCN rename planner override
      * @param FunctionRenamePlannerInterface|null      $functionRenamePlanner      the optional function rename planner override
+     * @param FunctionFqcnRenamePlannerInterface|null  $functionFqcnRenamePlanner  the optional function FQCN rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
@@ -93,7 +105,9 @@ final readonly class PhpRename
         ?PropertyRenamePlannerInterface $propertyRenamePlanner = null,
         ?ClassConstantRenamePlannerInterface $classConstantRenamePlanner = null,
         ?ClassRenamePlannerInterface $classRenamePlanner = null,
+        ?ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner = null,
         ?FunctionRenamePlannerInterface $functionRenamePlanner = null,
+        ?FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
@@ -101,7 +115,9 @@ final readonly class PhpRename
             propertyRenamePlanner: $propertyRenamePlanner ?? new MemberGraphPropertyRenamePlanner(),
             classConstantRenamePlanner: $classConstantRenamePlanner ?? new MemberGraphClassConstantRenamePlanner(),
             classRenamePlanner: $classRenamePlanner ?? new MemberGraphClassRenamePlanner(),
+            classFqcnRenamePlanner: $classFqcnRenamePlanner ?? new MemberGraphClassFqcnRenamePlanner(),
             functionRenamePlanner: $functionRenamePlanner ?? new MemberGraphFunctionRenamePlanner(),
+            functionFqcnRenamePlanner: $functionFqcnRenamePlanner ?? new MemberGraphFunctionFqcnRenamePlanner(),
             renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
         );
     }
@@ -241,6 +257,38 @@ final readonly class PhpRename
     }
 
     /**
+     * Plans a semantic class-like owner rename to another fully-qualified name.
+     *
+     * @param string $className    the current fully-qualified class-like owner name
+     * @param string $newClassName the replacement fully-qualified class-like owner name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planClassFqcnRename(string $className, string $newClassName): RenamePlan
+    {
+        return $this->classFqcnRenamePlanner->plan(
+            request: new ClassFqcnRenameRequest($className, $newClassName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic class-like owner FQCN rename to virtual file AST nodes.
+     *
+     * @param string $className    the current fully-qualified class-like owner name
+     * @param string $newClassName the replacement fully-qualified class-like owner name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameClassFqcn(string $className, string $newClassName): RenameResult
+    {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planClassFqcnRename($className, $newClassName),
+            build: $this->build,
+        );
+    }
+
+    /**
      * Plans a semantic function rename.
      *
      * @param string $functionName    the current fully-qualified function name
@@ -268,6 +316,38 @@ final readonly class PhpRename
     {
         return $this->renamePlanApplier->apply(
             plan: $this->planFunctionRename($functionName, $newFunctionName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic function rename to another fully-qualified name.
+     *
+     * @param string $functionName    the current fully-qualified function name
+     * @param string $newFunctionName the replacement fully-qualified function name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planFunctionFqcnRename(string $functionName, string $newFunctionName): RenamePlan
+    {
+        return $this->functionFqcnRenamePlanner->plan(
+            request: new FunctionFqcnRenameRequest($functionName, $newFunctionName),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic function FQCN rename to virtual file AST nodes.
+     *
+     * @param string $functionName    the current fully-qualified function name
+     * @param string $newFunctionName the replacement fully-qualified function name
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameFunctionFqcn(string $functionName, string $newFunctionName): RenameResult
+    {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planFunctionFqcnRename($functionName, $newFunctionName),
             build: $this->build,
         );
     }

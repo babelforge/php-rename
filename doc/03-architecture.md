@@ -28,6 +28,8 @@ It exposes:
 - `fromBuild()`;
 - `planClassRename()`;
 - `renameClass()`;
+- `planClassFqcnRename()`;
+- `renameClassFqcn()`;
 - `planMethodRename()`;
 - `renameMethod()`;
 - `planPropertyRename()`;
@@ -35,15 +37,19 @@ It exposes:
 - `planClassConstantRename()`;
 - `renameClassConstant()`;
 - `planFunctionRename()`;
-- `renameFunction()`.
+- `renameFunction()`;
+- `planFunctionFqcnRename()`;
+- `renameFunctionFqcn()`.
 
 `Application/Contract` contains the service contracts used by the facade:
 
 - `MethodRenamePlannerInterface`;
 - `ClassRenamePlannerInterface`;
+- `ClassFqcnRenamePlannerInterface`;
 - `PropertyRenamePlannerInterface`;
 - `ClassConstantRenamePlannerInterface`;
 - `FunctionRenamePlannerInterface`;
+- `FunctionFqcnRenamePlannerInterface`;
 - `RenamePlanApplierInterface`.
 
 ## Infrastructure

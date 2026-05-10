@@ -75,6 +75,24 @@ $result = $renamer->renameClass(
 
 The class planner uses `member-graph` owner source-node matches only. The first class rename slice does not move classes between namespaces.
 
+## Plan And Apply A Class FQCN Rename
+
+Class FQCN rename changes the full logical class-like owner name:
+
+```php
+$plan = $renamer->planClassFqcnRename(
+    className: 'App\\Mailer',
+    newClassName: 'App\\Infrastructure\\Sender',
+);
+
+$result = $renamer->renameClassFqcn(
+    className: 'App\\Mailer',
+    newClassName: 'App\\Infrastructure\\Sender',
+);
+```
+
+The declaration namespace and short declaration name are mutated in memory. Usage names returned by `member-graph` are rewritten to the replacement short name, and the containing namespace gets a normal `use` import when needed. Physical file moves remain out of scope.
+
 ## Plan And Apply A Property Rename
 
 Property rename follows the same plan/apply split:
@@ -132,5 +150,23 @@ $result = $renamer->renameFunction(
 ```
 
 The first function rename slice does not move functions between namespaces and does not rewrite `use function` imports.
+
+## Plan And Apply A Function FQCN Rename
+
+Function FQCN rename changes the full logical function name:
+
+```php
+$plan = $renamer->planFunctionFqcnRename(
+    functionName: 'App\\send_mail',
+    newFunctionName: 'Tools\\deliver_mail',
+);
+
+$result = $renamer->renameFunctionFqcn(
+    functionName: 'App\\send_mail',
+    newFunctionName: 'Tools\\deliver_mail',
+);
+```
+
+The declaration namespace and short function name are mutated in memory. Calls returned by `member-graph` are rewritten to the replacement short name, and the containing namespace gets a `use function` import when needed. Physical file moves remain out of scope.
 
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

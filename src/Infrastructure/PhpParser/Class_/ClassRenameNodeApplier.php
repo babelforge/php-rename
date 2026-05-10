@@ -10,9 +10,14 @@ use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
+use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\Node\Stmt\Use_;
+use PhpParser\Node\UseItem;
 
 /**
  * Applies class-like owner rename operations to declaration and usage nodes.
@@ -40,12 +45,20 @@ final readonly class ClassRenameNodeApplier implements RenameNodeApplierInterfac
         $node = $operation->node;
 
         if ($node instanceof ClassLike && $node->name instanceof Identifier) {
-            $node->name = $this->replacementIdentifier($node->name, $operation->newName);
+            $node->name = $this->replacementIdentifier($node->name, $this->shortName($operation->newName));
+
+            if ($this->isFqcnRename($operation->newName)) {
+                return $this->renameDeclarationNamespace($node, $operation->newName, $context);
+            }
 
             return true;
         }
 
         if ($node instanceof Name) {
+            if ($this->isFqcnRename($operation->newName)) {
+                return $this->replaceUsageWithFullyQualifiedName($node, $operation, $context);
+            }
+
             $this->renameLastNamePart($node, $operation->newName);
 
             return true;
@@ -68,6 +81,271 @@ final readonly class ClassRenameNodeApplier implements RenameNodeApplierInterfac
     private function replacementIdentifier(Identifier $identifier, string $name): Identifier
     {
         return new Identifier($name, $identifier->getAttributes());
+    }
+
+    /**
+     * Indicates whether the replacement class name is fully qualified.
+     *
+     * @param string $name the replacement name
+     */
+    private function isFqcnRename(string $name): bool
+    {
+        return str_contains($name, '\\');
+    }
+
+    /**
+     * Returns the short name for one class-like owner name.
+     *
+     * @param string $name the class-like owner name
+     */
+    private function shortName(string $name): string
+    {
+        $parts = explode('\\', ltrim($name, '\\'));
+
+        return (string) end($parts);
+    }
+
+    /**
+     * Returns the namespace for one class-like owner name.
+     *
+     * @param string $name the class-like owner name
+     */
+    private function namespaceName(string $name): string
+    {
+        $parts = explode('\\', ltrim($name, '\\'));
+        array_pop($parts);
+
+        return implode('\\', $parts);
+    }
+
+    /**
+     * Renames the namespace of a matched class-like declaration.
+     *
+     * @param ClassLike                $classLike the class-like declaration node
+     * @param string                   $newName   the replacement fully-qualified class-like owner name
+     * @param RenameApplicationContext $context   the rename application context
+     */
+    private function renameDeclarationNamespace(
+        ClassLike $classLike,
+        string $newName,
+        RenameApplicationContext $context,
+    ): bool {
+        $namespaceName = $this->namespaceName($newName);
+        $parent = $classLike->getAttribute('parent');
+
+        if (!$parent instanceof Namespace_) {
+            if ('' === $namespaceName) {
+                return true;
+            }
+
+            $context->diagnostics->add(new RenameDiagnostic(
+                severity: RenameDiagnosticSeverity::WARNING,
+                message: 'Cannot move a global class declaration into a namespace without a namespace node.',
+            ));
+
+            return false;
+        }
+
+        $parent->name = '' === $namespaceName ? null : new Name($namespaceName, $parent->name?->getAttributes() ?? []);
+
+        return true;
+    }
+
+    /**
+     * Replaces one matched class-like owner usage with a fully-qualified name.
+     *
+     * @param Name                     $name      the matched usage name node
+     * @param RenameOperation          $operation the rename operation
+     * @param RenameApplicationContext $context   the rename application context
+     */
+    private function replaceUsageWithFullyQualifiedName(
+        Name $name,
+        RenameOperation $operation,
+        RenameApplicationContext $context,
+    ): bool {
+        $namespace = $this->namespaceParent($name);
+        $importAlias = null === $namespace ? null : $this->updateOrAddUseImport(
+            namespace: $namespace,
+            oldName: $operation->oldName,
+            newName: $operation->newName,
+        );
+
+        if (null !== $importAlias) {
+            return $this->replaceUsageWithImportedName($name, $importAlias, $context);
+        }
+
+        $replacement = new FullyQualified(ltrim($operation->newName, '\\'), $name->getAttributes());
+
+        if ($this->replaceNodeInParent($name, $replacement)) {
+            return true;
+        }
+
+        $context->diagnostics->add(new RenameDiagnostic(
+            severity: RenameDiagnosticSeverity::WARNING,
+            message: 'Cannot replace class rename usage without a parent node.',
+        ));
+
+        return false;
+    }
+
+    /**
+     * Replaces one matched usage with a short imported name.
+     *
+     * @param Name                     $name        the matched usage name node
+     * @param string                   $importAlias the imported name alias
+     * @param RenameApplicationContext $context     the rename application context
+     */
+    private function replaceUsageWithImportedName(
+        Name $name,
+        string $importAlias,
+        RenameApplicationContext $context,
+    ): bool {
+        $replacement = new Name($importAlias, $name->getAttributes());
+
+        if ($this->replaceNodeInParent($name, $replacement)) {
+            return true;
+        }
+
+        $context->diagnostics->add(new RenameDiagnostic(
+            severity: RenameDiagnosticSeverity::WARNING,
+            message: 'Cannot replace class rename usage without a parent node.',
+        ));
+
+        return false;
+    }
+
+    /**
+     * Updates an existing class import or adds a new one for the replacement owner.
+     *
+     * @param Namespace_ $namespace the namespace containing the matched usage
+     * @param string     $oldName   the old fully-qualified class-like owner name
+     * @param string     $newName   the replacement fully-qualified class-like owner name
+     */
+    private function updateOrAddUseImport(Namespace_ $namespace, string $oldName, string $newName): ?string
+    {
+        $newNamespaceName = $this->namespaceName($newName);
+        $newShortName = $this->shortName($newName);
+        $currentNamespaceName = $namespace->name?->toString() ?? '';
+
+        if ($currentNamespaceName === $newNamespaceName) {
+            return $newShortName;
+        }
+
+        foreach ($namespace->stmts as $statement) {
+            if (!$statement instanceof Use_ || Use_::TYPE_NORMAL !== $statement->type) {
+                continue;
+            }
+
+            foreach ($statement->uses as $use) {
+                if (ltrim($use->name->toString(), '\\') === ltrim($newName, '\\')) {
+                    return $use->getAlias()->toString();
+                }
+
+                if ($use->getAlias()->toString() === $newShortName && ltrim($use->name->toString(), '\\') !== ltrim($oldName, '\\')) {
+                    return null;
+                }
+
+                if (ltrim($use->name->toString(), '\\') !== ltrim($oldName, '\\')) {
+                    continue;
+                }
+
+                $use->name = new Name(ltrim($newName, '\\'), $use->name->getAttributes());
+                $use->alias = null;
+
+                return $newShortName;
+            }
+        }
+
+        $this->addUseImport($namespace, $newName);
+
+        return $newShortName;
+    }
+
+    /**
+     * Adds a normal class import to a namespace node.
+     *
+     * @param Namespace_ $namespace the namespace to update
+     * @param string     $newName   the fully-qualified class-like owner name to import
+     */
+    private function addUseImport(Namespace_ $namespace, string $newName): void
+    {
+        $useItem = new UseItem(new Name(ltrim($newName, '\\')));
+        $use = new Use_([$useItem], Use_::TYPE_NORMAL);
+        $useItem->setAttribute('parent', $use);
+        $use->setAttribute('parent', $namespace);
+        $insertAt = 0;
+
+        foreach ($namespace->stmts as $index => $statement) {
+            if ($statement instanceof Use_) {
+                $insertAt = $index + 1;
+            }
+        }
+
+        array_splice($namespace->stmts, $insertAt, 0, [$use]);
+    }
+
+    /**
+     * Returns the nearest namespace parent for one node.
+     *
+     * @param Node $node the node used as the starting point
+     */
+    private function namespaceParent(Node $node): ?Namespace_
+    {
+        $parent = $node->getAttribute('parent');
+
+        while ($parent instanceof Node) {
+            if ($parent instanceof Namespace_) {
+                return $parent;
+            }
+
+            $parent = $parent->getAttribute('parent');
+        }
+
+        return null;
+    }
+
+    /**
+     * Replaces one node by using its direct parent attribute.
+     *
+     * @param Node $node        the existing child node
+     * @param Node $replacement the replacement child node
+     */
+    private function replaceNodeInParent(Node $node, Node $replacement): bool
+    {
+        $parent = $node->getAttribute('parent');
+
+        if (!$parent instanceof Node) {
+            return false;
+        }
+
+        foreach ($parent->getSubNodeNames() as $subNodeName) {
+            $subNode = $parent->{$subNodeName};
+
+            if ($subNode === $node) {
+                $replacement->setAttribute('parent', $parent);
+                $parent->{$subNodeName} = $replacement;
+
+                return true;
+            }
+
+            if (!is_array($subNode)) {
+                continue;
+            }
+
+            foreach ($subNode as $index => $subNodeItem) {
+                if ($subNodeItem !== $node) {
+                    continue;
+                }
+
+                $replacement->setAttribute('parent', $parent);
+                $subNode[$index] = $replacement;
+                $parent->{$subNodeName} = $subNode;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -46,6 +46,8 @@ It also supports class renaming for:
 - `PhpParser\Node\Stmt\ClassLike`;
 - `PhpParser\Node\Name`.
 
+For class FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Usage `Name` nodes are replaced through their direct parent with the replacement short name, while the containing namespace gets a normal `use` import when needed. If importing would collide with an existing alias, the usage falls back to `PhpParser\Node\Name\FullyQualified`.
+
 It also supports property renaming for:
 
 - `PhpParser\Node\Stmt\PropertyProperty`;
@@ -63,6 +65,8 @@ It also supports function renaming for:
 
 - `PhpParser\Node\Stmt\Function_`;
 - `PhpParser\Node\Expr\FuncCall`.
+
+For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
@@ -94,6 +98,8 @@ Current supported class docblock references:
 
 These references are renamed only on matched class-like owner declaration docblocks.
 
+For class FQCN rename, structured docblock tags can also rename fully-qualified class references such as `@see App\OldClass`.
+
 Current supported property docblock references:
 
 ```php
@@ -121,6 +127,8 @@ old_function()
 ```
 
 These references are renamed only on matched function declaration docblocks.
+
+For function FQCN rename, structured docblock references can also rename fully-qualified function references such as `@see App\old_function()`.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

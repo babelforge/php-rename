@@ -43,6 +43,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The first class rename slice expects a fully-qualified current class-like owner name and a short replacement class name. It does not move classes between namespaces.
 
+For class FQCN renaming, planning starts from the same source of truth:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->owner('App\\Mailer');
+```
+
+The difference is the replacement contract: `renameClassFqcn()` receives a fully-qualified replacement owner name. The planner still does not discover additional candidates by itself.
+
 For property renaming, planning starts from:
 
 ```php
@@ -75,6 +86,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 ```
 
 The first function rename slice expects a fully-qualified current function name and a short replacement function name. It does not move functions between namespaces.
+
+For function FQCN renaming, planning starts from the same source of truth:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->function('App\\send_mail');
+```
+
+The difference is the replacement contract: `renameFunctionFqcn()` receives a fully-qualified replacement function name. The planner still does not discover additional candidates by itself.
 
 ## Method Rename Scope
 
@@ -119,11 +141,15 @@ Examples:
 
 `MemberGraphClassRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::owner(...)`.
 
+`MemberGraphClassFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::owner(...)`, but stores fully-qualified old and new owner names in the rename operations.
+
 `MemberGraphPropertyRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::property(...)`.
 
 `MemberGraphClassConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`.
 
 `MemberGraphFunctionRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`.
+
+`MemberGraphFunctionFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`, but stores fully-qualified old and new function names in the rename operations.
 
 The planner intentionally does not search source code by itself.
 

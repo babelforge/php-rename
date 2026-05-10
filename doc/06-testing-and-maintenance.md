@@ -21,10 +21,12 @@ The current test suite covers:
 - `MethodRenameRequest` validation;
 - `RenameDiagnosticCollection` counting and iteration.
 - class rename planning and AST application against a real `member-graph` build.
+- class FQCN rename planning and AST application against a real `member-graph` build.
 - method rename planning and AST application against a real `member-graph` build.
 - property rename planning and AST application against a real `member-graph` build.
 - class-constant rename planning and AST application against a real `member-graph` build.
 - function rename planning and AST application against a real `member-graph` build.
+- function FQCN rename planning and AST application against a real `member-graph` build.
 
 ## Testing Direction
 
@@ -34,6 +36,7 @@ Priority cases:
 
 - direct class-like owner declaration;
 - direct class-like owner usage;
+- class-like owner namespace move;
 - direct method declaration;
 - direct method call;
 - direct property declaration;
@@ -42,6 +45,8 @@ Priority cases:
 - direct class-constant fetch;
 - direct function declaration;
 - direct function call;
+- function namespace move;
+- function import update;
 - parent and child method declarations;
 - trait method declaration;
 - interface method declaration;

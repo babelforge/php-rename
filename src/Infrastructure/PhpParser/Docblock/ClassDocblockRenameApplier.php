@@ -69,12 +69,46 @@ final readonly class ClassDocblockRenameApplier implements RenameMetadataApplier
      */
     private function renameSupportedClassReferences(string $text, string $oldName, string $newName): string
     {
-        $quotedOldName = preg_quote($oldName, '/');
+        $updatedText = $this->renameSupportedClassName($text, $oldName, $newName);
+
+        if (!str_contains($oldName, '\\')) {
+            return $updatedText;
+        }
+
+        return $this->renameSupportedClassName(
+            text: $updatedText,
+            oldName: $this->shortName($oldName),
+            newName: $this->shortName($newName),
+        );
+    }
+
+    /**
+     * Renames one supported class-like owner name form inside one docblock text.
+     *
+     * @param string $text    the docblock text
+     * @param string $oldName the current class-like owner name form
+     * @param string $newName the replacement class-like owner name form
+     */
+    private function renameSupportedClassName(string $text, string $oldName, string $newName): string
+    {
+        $quotedOldName = preg_quote(ltrim($oldName, '\\'), '/');
 
         return preg_replace(
             pattern: '/(@(?:see|var|param|return|throws|extends|implements|template|mixin|property(?:-read|-write)?|method)\s+[^\r\n]*)\b'.$quotedOldName.'\b/',
-            replacement: '$1'.$newName,
+            replacement: '$1'.ltrim($newName, '\\'),
             subject: $text,
         ) ?? $text;
+    }
+
+    /**
+     * Returns the short name for one class-like owner name.
+     *
+     * @param string $name the class-like owner name
+     */
+    private function shortName(string $name): string
+    {
+        $parts = explode('\\', ltrim($name, '\\'));
+
+        return (string) end($parts);
     }
 }
