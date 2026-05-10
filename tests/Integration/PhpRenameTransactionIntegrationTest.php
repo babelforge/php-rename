@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Tests\Integration;
 
 use PhpNoobs\PhpRename\Application\PhpRename;
+use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
+use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
 use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
 use PHPUnit\Framework\TestCase;
@@ -113,6 +115,40 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures report-only conflicts keep the transaction committable while preserving diagnostics.
+     */
+    public function testItCommitsReportOnlyConflicts(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                }
+
+                public function deliver(): void
+                {
+                }
+            }
+            PHP);
+
+        $transaction = $renamer->beginTransaction();
+
+        $transaction->renameMethod('App\\Mailer', 'send', 'deliver', RenameConflictPolicy::REPORT);
+
+        $result = $transaction->commit();
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertSame(RenameTransactionStatus::COMMITTED, $result->status);
+        self::assertSame(RenameDiagnosticSeverity::WARNING, $this->firstTransactionDiagnosticSeverity($result));
+        self::assertStringContainsString('public function deliver(): void', $printedCode);
+    }
+
+    /**
      * Creates a renamer from one source fixture.
      *
      * @param string $fileName the source file name
@@ -137,6 +173,20 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
     private function firstPlanDiagnosticSeverity(RenameResult $result): ?RenameDiagnosticSeverity
     {
         foreach ($result->plan->diagnostics as $diagnostic) {
+            return $diagnostic->severity;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the first transaction diagnostic severity.
+     *
+     * @param RenameTransactionResult $result the transaction result
+     */
+    private function firstTransactionDiagnosticSeverity(RenameTransactionResult $result): ?RenameDiagnosticSeverity
+    {
+        foreach ($result->diagnostics as $diagnostic) {
             return $diagnostic->severity;
         }
 
