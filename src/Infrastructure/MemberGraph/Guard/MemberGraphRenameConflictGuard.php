@@ -17,6 +17,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
@@ -95,6 +96,40 @@ final readonly class MemberGraphRenameConflictGuard
         MemberDependencyGraphBuild $build,
     ): void {
         $scope = MemberGraphSymbolScopeLocator::fromBuild($build)->classConstantScope($request->className, $request->constantName);
+        $facts = new MemberGraphSymbolScopeFactCollection();
+
+        foreach ($scope->classConstantDeclarations() as $fact) {
+            $facts->add($fact);
+        }
+
+        foreach ($scope->enumCaseDeclarations() as $fact) {
+            $facts->add($fact);
+        }
+
+        $this->reportNameConflict(
+            diagnostics: $diagnostics,
+            facts: $facts,
+            oldName: $request->oldName(),
+            newName: $request->newName(),
+            policy: $request->conflictPolicy,
+            message: sprintf('The class constant or enum case name "%s" already exists in the resolved owner scope.', $request->newName()),
+            caseSensitive: true,
+        );
+    }
+
+    /**
+     * Reports conflicts for one enum-case rename request.
+     *
+     * @param RenameDiagnosticCollection $diagnostics the diagnostics to update
+     * @param EnumCaseRenameRequest      $request     the rename request
+     * @param MemberDependencyGraphBuild $build       the member graph build
+     */
+    public function reportEnumCaseConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        EnumCaseRenameRequest $request,
+        MemberDependencyGraphBuild $build,
+    ): void {
+        $scope = MemberGraphSymbolScopeLocator::fromBuild($build)->classConstantScope($request->enumName, $request->caseName);
         $facts = new MemberGraphSymbolScopeFactCollection();
 
         foreach ($scope->classConstantDeclarations() as $fact) {

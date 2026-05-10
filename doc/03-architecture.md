@@ -37,6 +37,8 @@ It exposes:
 - `renameProperty()`;
 - `planClassConstantRename()`;
 - `renameClassConstant()`;
+- `planEnumCaseRename()`;
+- `renameEnumCase()`;
 - `planFunctionRename()`;
 - `renameFunction()`;
 - `planFunctionFqcnRename()`;
@@ -53,6 +55,7 @@ It exposes:
 - `ClassFqcnRenamePlannerInterface`;
 - `PropertyRenamePlannerInterface`;
 - `ClassConstantRenamePlannerInterface`;
+- `EnumCaseRenamePlannerInterface`;
 - `FunctionRenamePlannerInterface`;
 - `FunctionFqcnRenamePlannerInterface`;
 - `ParameterRenamePlannerInterface`;

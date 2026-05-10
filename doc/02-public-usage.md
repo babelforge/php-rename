@@ -168,6 +168,26 @@ $result = $renamer->renameClassConstant(
 
 The class-constant planner uses `member-graph` source-node matches only. The applier supports class-constant declarations, enum-case declarations, and class-constant fetches.
 
+## Plan And Apply An Enum-Case Rename
+
+Enum-case rename has a dedicated API even though it reuses the same `member-graph` source-node lookup path as class constants:
+
+```php
+$plan = $renamer->planEnumCaseRename(
+    enumName: App\Domain\Status::class,
+    caseName: 'ACTIVE',
+    newCaseName: 'ENABLED',
+);
+
+$result = $renamer->renameEnumCase(
+    enumName: App\Domain\Status::class,
+    caseName: 'ACTIVE',
+    newCaseName: 'ENABLED',
+);
+```
+
+The enum-case planner uses `member-graph` source-node matches only. The applier supports enum-case declarations, enum-case fetches, and supported enum-case docblock references.
+
 ## Plan And Apply A Function Rename
 
 Function rename uses the fully-qualified current function name and a short replacement name:

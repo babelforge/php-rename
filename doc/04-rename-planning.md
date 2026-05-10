@@ -185,6 +185,8 @@ Conflict comparisons follow PHP naming semantics: class-like, function, and meth
 
 `MemberGraphClassConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`.
 
+`MemberGraphEnumCaseRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::classConstant(...)`, but records enum-case operations with the explicit enum-case symbol kind.
+
 `MemberGraphFunctionRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`.
 
 `MemberGraphFunctionFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`, but stores fully-qualified old and new function names in the rename operations.

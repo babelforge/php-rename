@@ -27,7 +27,8 @@ final readonly class ClassConstantRenameNodeApplier implements RenameNodeApplier
      */
     public function supports(RenameOperation $operation): bool
     {
-        return RenameSymbolKind::CLASS_CONSTANT === $operation->symbolKind;
+        return RenameSymbolKind::CLASS_CONSTANT === $operation->symbolKind
+            || RenameSymbolKind::ENUM_CASE === $operation->symbolKind;
     }
 
     /**
@@ -60,7 +61,7 @@ final readonly class ClassConstantRenameNodeApplier implements RenameNodeApplier
 
         $context->diagnostics->add(new RenameDiagnostic(
             severity: RenameDiagnosticSeverity::WARNING,
-            message: sprintf('Unsupported class-constant rename node "%s".', $node::class),
+            message: sprintf('Unsupported class-constant or enum-case rename node "%s".', $node::class),
         ));
 
         return false;

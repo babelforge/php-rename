@@ -157,6 +157,53 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures enum-case conflicts block application by default and can be reported as warnings.
+     */
+    public function testItHandlesEnumCaseRenameConflicts(): void
+    {
+        $renamer = $this->renamerWithFixture('EnumCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            enum Status
+            {
+                case ACTIVE;
+
+                case ENABLED;
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameEnumCase('App\\Status', 'ACTIVE', 'ENABLED'), 'case ACTIVE');
+        $this->assertConflictReportsAndApplies($renamer->renameEnumCase('App\\Status', 'ACTIVE', 'ENABLED', RenameConflictPolicy::REPORT), 'case ENABLED');
+    }
+
+    /**
+     * Ensures enum-case renames conflict with class constants in projected owner scopes.
+     */
+    public function testItHandlesEnumCaseRenameConflictsWithClassConstants(): void
+    {
+        $renamer = $this->renamerWithFixture('EnumCaseClassConstantFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            interface StatusContract
+            {
+                public const ENABLED = 'enabled';
+            }
+
+            enum Status implements StatusContract
+            {
+                case ACTIVE;
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameEnumCase('App\\Status', 'ACTIVE', 'ENABLED'), 'case ACTIVE');
+        $this->assertConflictReportsAndApplies($renamer->renameEnumCase('App\\Status', 'ACTIVE', 'ENABLED', RenameConflictPolicy::REPORT), 'case ENABLED');
+    }
+
+    /**
      * Ensures short class-like conflicts block application by default and can be reported as warnings.
      */
     public function testItHandlesClassRenameConflicts(): void

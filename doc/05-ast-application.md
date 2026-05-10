@@ -69,6 +69,11 @@ It also supports class-constant renaming for:
 - `PhpParser\Node\Expr\ClassConstFetch`;
 - `PhpParser\Node\Stmt\EnumCase`.
 
+The same applier also supports explicit enum-case rename operations for:
+
+- `PhpParser\Node\Stmt\EnumCase`;
+- `PhpParser\Node\Expr\ClassConstFetch`.
+
 It also supports function renaming for:
 
 - `PhpParser\Node\Stmt\Function_`;

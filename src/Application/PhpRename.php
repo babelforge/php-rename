@@ -9,6 +9,7 @@ use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\EnumCaseRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
@@ -21,6 +22,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
@@ -29,6 +31,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassConstantRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphEnumCaseRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphMethodRenamePlanner;
@@ -48,6 +51,7 @@ final readonly class PhpRename
      * @param MethodRenamePlannerInterface        $methodRenamePlanner        the method rename planner
      * @param PropertyRenamePlannerInterface      $propertyRenamePlanner      the property rename planner
      * @param ClassConstantRenamePlannerInterface $classConstantRenamePlanner the class-constant rename planner
+     * @param EnumCaseRenamePlannerInterface      $enumCaseRenamePlanner      the enum-case rename planner
      * @param ClassRenamePlannerInterface         $classRenamePlanner         the class rename planner
      * @param ClassFqcnRenamePlannerInterface     $classFqcnRenamePlanner     the class FQCN rename planner
      * @param FunctionRenamePlannerInterface      $functionRenamePlanner      the function rename planner
@@ -60,6 +64,7 @@ final readonly class PhpRename
         private MethodRenamePlannerInterface $methodRenamePlanner,
         private PropertyRenamePlannerInterface $propertyRenamePlanner,
         private ClassConstantRenamePlannerInterface $classConstantRenamePlanner,
+        private EnumCaseRenamePlannerInterface $enumCaseRenamePlanner,
         private ClassRenamePlannerInterface $classRenamePlanner,
         private ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner,
         private FunctionRenamePlannerInterface $functionRenamePlanner,
@@ -104,6 +109,7 @@ final readonly class PhpRename
      * @param FunctionRenamePlannerInterface|null      $functionRenamePlanner      the optional function rename planner override
      * @param FunctionFqcnRenamePlannerInterface|null  $functionFqcnRenamePlanner  the optional function FQCN rename planner override
      * @param ParameterRenamePlannerInterface|null     $parameterRenamePlanner     the optional parameter rename planner override
+     * @param EnumCaseRenamePlannerInterface|null      $enumCaseRenamePlanner      the optional enum-case rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
@@ -116,12 +122,14 @@ final readonly class PhpRename
         ?FunctionRenamePlannerInterface $functionRenamePlanner = null,
         ?FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner = null,
         ?ParameterRenamePlannerInterface $parameterRenamePlanner = null,
+        ?EnumCaseRenamePlannerInterface $enumCaseRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
             methodRenamePlanner: $methodRenamePlanner ?? new MemberGraphMethodRenamePlanner(),
             propertyRenamePlanner: $propertyRenamePlanner ?? new MemberGraphPropertyRenamePlanner(),
             classConstantRenamePlanner: $classConstantRenamePlanner ?? new MemberGraphClassConstantRenamePlanner(),
+            enumCaseRenamePlanner: $enumCaseRenamePlanner ?? new MemberGraphEnumCaseRenamePlanner(),
             classRenamePlanner: $classRenamePlanner ?? new MemberGraphClassRenamePlanner(),
             classFqcnRenamePlanner: $classFqcnRenamePlanner ?? new MemberGraphClassFqcnRenamePlanner(),
             functionRenamePlanner: $functionRenamePlanner ?? new MemberGraphFunctionRenamePlanner(),
@@ -259,6 +267,50 @@ final readonly class PhpRename
     ): RenameResult {
         return $this->renamePlanApplier->apply(
             plan: $this->planClassConstantRename($className, $constantName, $newConstantName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic enum-case rename.
+     *
+     * @param string               $enumName       the enum name that anchors the enum-case rename
+     * @param string               $caseName       the current enum-case name
+     * @param string               $newCaseName    the replacement enum-case name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planEnumCaseRename(
+        string $enumName,
+        string $caseName,
+        string $newCaseName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
+        return $this->enumCaseRenamePlanner->plan(
+            request: new EnumCaseRenameRequest($enumName, $caseName, $newCaseName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic enum-case rename to virtual file AST nodes.
+     *
+     * @param string               $enumName       the enum name that anchors the enum-case rename
+     * @param string               $caseName       the current enum-case name
+     * @param string               $newCaseName    the replacement enum-case name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameEnumCase(
+        string $enumName,
+        string $caseName,
+        string $newCaseName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planEnumCaseRename($enumName, $caseName, $newCaseName, $conflictPolicy),
             build: $this->build,
         );
     }

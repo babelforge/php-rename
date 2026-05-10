@@ -26,7 +26,7 @@ final readonly class ClassConstantDocblockRenameApplier implements RenameMetadat
      */
     public function supports(RenameOperation $operation): bool
     {
-        return RenameSymbolKind::CLASS_CONSTANT === $operation->symbolKind
+        return (RenameSymbolKind::CLASS_CONSTANT === $operation->symbolKind || RenameSymbolKind::ENUM_CASE === $operation->symbolKind)
             && RenameOperationRole::DECLARATION === $operation->role
             && ($operation->node instanceof Const_ || $operation->node instanceof EnumCase);
     }

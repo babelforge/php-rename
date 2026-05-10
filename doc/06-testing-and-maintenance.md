@@ -35,6 +35,7 @@ The current test suite covers:
 - class-like and function import alias conflicts for FQCN renames, including normal imports, grouped imports, and explicit aliases.
 - promoted property renames, including constructor-local parameter usages and conflicts with normal or promoted properties.
 - trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
+- explicit enum-case rename API coverage.
 
 ## Testing Direction
 
@@ -53,6 +54,8 @@ Priority cases:
 - promoted property constructor-local parameter usage;
 - direct class-constant declaration;
 - direct class-constant fetch;
+- direct enum-case declaration;
+- direct enum-case fetch;
 - direct function declaration;
 - direct function call;
 - function namespace move;

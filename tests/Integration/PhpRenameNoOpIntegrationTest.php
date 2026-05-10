@@ -95,6 +95,25 @@ final class PhpRenameNoOpIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures enum-case no-op renames produce an empty warning plan.
+     */
+    public function testItHandlesEnumCaseNoOpRename(): void
+    {
+        $renamer = $this->renamerWithFixture('EnumCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            enum Status
+            {
+                case ACTIVE;
+            }
+            PHP);
+
+        $this->assertNoOpResult($renamer->renameEnumCase('App\\Status', 'ACTIVE', 'ACTIVE'));
+    }
+
+    /**
      * Ensures short class no-op renames produce an empty warning plan.
      */
     public function testItHandlesClassNoOpRename(): void

@@ -14,6 +14,7 @@ enum RenameSymbolKind
     case METHOD;
     case PROPERTY;
     case CLASS_CONSTANT;
+    case ENUM_CASE;
     case PARAMETER;
     case NAMED_ARGUMENT;
 }
