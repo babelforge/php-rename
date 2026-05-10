@@ -23,6 +23,8 @@ The default policy is `RenameConflictPolicy::FAIL`. It emits an error diagnostic
 
 `RenameConflictPolicy::REPORT` emits a warning diagnostic and keeps the plan applicable.
 
+Some semantic warnings are independent of conflict policy. For example, renaming from or to a PHP magic method name emits a warning because it can change runtime behavior, but the plan remains applicable unless another error diagnostic is present.
+
 ## Input Validation And No-Op Renames
 
 Rename requests validate PHP identifiers and FQCN-like names before planning.

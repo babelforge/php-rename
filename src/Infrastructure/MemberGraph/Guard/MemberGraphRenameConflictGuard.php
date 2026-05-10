@@ -45,6 +45,8 @@ final readonly class MemberGraphRenameConflictGuard
         MethodRenameRequest $request,
         MemberDependencyGraphBuild $build,
     ): void {
+        $this->reportMagicMethodWarnings($diagnostics, $request);
+
         $scope = MemberGraphSymbolScopeLocator::fromBuild($build)->methodScope($request->className, $request->methodName);
 
         $this->reportNameConflict(
@@ -56,6 +58,29 @@ final readonly class MemberGraphRenameConflictGuard
             message: sprintf('The method name "%s" already exists in the resolved owner scope.', $request->newName()),
             caseSensitive: false,
         );
+    }
+
+    /**
+     * Reports semantic warnings for method renames involving PHP magic methods.
+     *
+     * @param RenameDiagnosticCollection $diagnostics the diagnostics to update
+     * @param MethodRenameRequest        $request     the rename request
+     */
+    private function reportMagicMethodWarnings(RenameDiagnosticCollection $diagnostics, MethodRenameRequest $request): void
+    {
+        if ($this->isMagicMethodName($request->methodName)) {
+            $diagnostics->add(new RenameDiagnostic(
+                severity: RenameDiagnosticSeverity::WARNING,
+                message: sprintf('Renaming magic method "%s" can change PHP runtime behavior.', $request->methodName),
+            ));
+        }
+
+        if ($this->isMagicMethodName($request->newMethodName)) {
+            $diagnostics->add(new RenameDiagnostic(
+                severity: RenameDiagnosticSeverity::WARNING,
+                message: sprintf('Renaming a method to magic method "%s" can change PHP runtime behavior.', $request->newMethodName),
+            ));
+        }
     }
 
     /**
@@ -636,6 +661,34 @@ final readonly class MemberGraphRenameConflictGuard
     private function sameFqcn(string $left, string $right, bool $caseSensitive): bool
     {
         return $this->sameName(ltrim($left, '\\'), ltrim($right, '\\'), $caseSensitive);
+    }
+
+    /**
+     * Indicates whether one method name has PHP magic method semantics.
+     *
+     * @param string $name the method name to inspect
+     */
+    private function isMagicMethodName(string $name): bool
+    {
+        return in_array(strtolower($name), [
+            '__construct',
+            '__destruct',
+            '__call',
+            '__callstatic',
+            '__get',
+            '__set',
+            '__isset',
+            '__unset',
+            '__sleep',
+            '__wakeup',
+            '__serialize',
+            '__unserialize',
+            '__tostring',
+            '__invoke',
+            '__set_state',
+            '__clone',
+            '__debuginfo',
+        ], true);
     }
 
     /**

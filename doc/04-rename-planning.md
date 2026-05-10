@@ -167,6 +167,8 @@ Current conflict checks consume `member-graph` scope facts for:
 
 Conflict comparisons follow PHP naming semantics: class-like, function, and method collisions are checked case-insensitively, while properties, class constants, enum cases, parameters, and local variables remain case-sensitive.
 
+Method renames involving PHP magic method names also emit non-blocking semantic warnings because they can change runtime behavior. These warnings are owned by `php-rename` policy and do not require extra `member-graph` facts.
+
 ## Current Implementation
 
 `MemberGraphMethodRenamePlanner` currently:

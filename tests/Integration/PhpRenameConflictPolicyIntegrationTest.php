@@ -63,6 +63,48 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures renaming an existing magic method emits a semantic warning without blocking application.
+     */
+    public function testItWarnsWhenRenamingMagicMethods(): void
+    {
+        $renamer = $this->renamerWithFixture('MagicMethodFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function __construct()
+                {
+                }
+            }
+            PHP);
+
+        $this->assertConflictReportsAndApplies($renamer->renameMethod('App\\Mailer', '__construct', 'initialize'), 'function initialize(');
+    }
+
+    /**
+     * Ensures renaming a method to a magic method emits a semantic warning without blocking application.
+     */
+    public function testItWarnsWhenRenamingToMagicMethods(): void
+    {
+        $renamer = $this->renamerWithFixture('NewMagicMethodFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function initialize()
+                {
+                }
+            }
+            PHP);
+
+        $this->assertConflictReportsAndApplies($renamer->renameMethod('App\\Mailer', 'initialize', '__construct'), 'function __construct(');
+    }
+
+    /**
      * Ensures property conflicts block application by default and can be reported as warnings.
      */
     public function testItHandlesPropertyRenameConflicts(): void

@@ -36,6 +36,7 @@ The current test suite covers:
 - promoted property renames, including constructor-local parameter usages and conflicts with normal or promoted properties.
 - trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
 - explicit enum-case rename API coverage.
+- magic method semantic warning diagnostics.
 
 ## Testing Direction
 
@@ -48,6 +49,7 @@ Priority cases:
 - class-like owner namespace move;
 - direct method declaration;
 - direct method call;
+- magic method semantic warnings;
 - direct property declaration;
 - direct property fetch;
 - promoted property declaration;
