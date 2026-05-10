@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a fully-qualified function rename intent.
@@ -25,8 +26,8 @@ final readonly class FunctionFqcnRenameRequest implements RenameRequestInterface
         public string $newFunctionName,
         public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
-        $this->guardNotEmpty($functionName, 'functionName');
-        $this->guardNotEmpty($newFunctionName, 'newFunctionName');
+        RenameInputValidator::guardFqcn($functionName, 'functionName');
+        RenameInputValidator::guardFqcn($newFunctionName, 'newFunctionName');
     }
 
     /**
@@ -43,20 +44,5 @@ final readonly class FunctionFqcnRenameRequest implements RenameRequestInterface
     public function newName(): string
     {
         return ltrim($this->newFunctionName, '\\');
-    }
-
-    /**
-     * Ensures that a rename input is not empty.
-     *
-     * @param string $value the input value
-     * @param string $name  the input name
-     *
-     * @throws \InvalidArgumentException when the input is empty
-     */
-    private function guardNotEmpty(string $value, string $name): void
-    {
-        if ('' === trim($value)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" rename input cannot be empty.', $name));
-        }
     }
 }

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph;
+namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
@@ -15,27 +15,34 @@ use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
 
 /**
- * Plans function renames from `member-graph` semantic facts.
+ * Plans parameter renames from `member-graph` semantic facts.
  */
-final readonly class MemberGraphFunctionRenamePlanner implements FunctionRenamePlannerInterface
+final readonly class MemberGraphParameterRenamePlanner implements ParameterRenamePlannerInterface
 {
     /**
-     * Plans a function rename.
+     * Plans a parameter rename.
      *
-     * @param FunctionRenameRequest      $request the function rename request
+     * @param ParameterRenameRequest     $request the parameter rename request
      * @param MemberDependencyGraphBuild $build   the member graph build used to resolve declarations and usages
      */
-    public function plan(FunctionRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
+    public function plan(ParameterRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
-        new MemberGraphRenameConflictGuard()->reportFunctionConflicts($diagnostics, $request, $build);
+
+        if (new MemberGraphRenameNoOpGuard()->reportNoOp($diagnostics, $request)) {
+            return new RenamePlan($request, $operations, $diagnostics);
+        }
+
+        new MemberGraphRenameConflictGuard()->reportParameterConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
-            ->function($request->functionName);
+            ->parameter($request->owner, $request->functionLikeName, $request->parameterName, $request->parameterIndex);
 
         foreach ($matches as $match) {
             $operationRole = $this->operationRole($match->role);
@@ -43,26 +50,26 @@ final readonly class MemberGraphFunctionRenamePlanner implements FunctionRenameP
             if (null === $operationRole) {
                 $diagnostics->add(new RenameDiagnostic(
                     severity: RenameDiagnosticSeverity::WARNING,
-                    message: 'Unsupported function rename source-node match role.',
+                    message: 'Unsupported parameter rename source-node match role.',
                 ));
 
                 continue;
             }
 
             $operations->add(new RenameOperation(
-                symbolKind: RenameSymbolKind::FUNCTION_,
+                symbolKind: RenameSymbolKind::PARAMETER,
                 role: $operationRole,
                 file: $match->virtualFile,
                 node: $match->node,
                 oldName: $request->oldName(),
-                newName: $request->newFunctionName,
+                newName: $request->newName(),
             ));
         }
 
         if (0 === count($operations)) {
             $diagnostics->add(new RenameDiagnostic(
                 severity: RenameDiagnosticSeverity::WARNING,
-                message: 'No source-node match was found for the requested function rename.',
+                message: 'No source-node match was found for the requested parameter rename.',
             ));
         }
 
@@ -81,8 +88,9 @@ final readonly class MemberGraphFunctionRenamePlanner implements FunctionRenameP
     private function operationRole(VirtualPhpSourceFileNodeMatchRole $role): ?RenameOperationRole
     {
         return match ($role) {
-            VirtualPhpSourceFileNodeMatchRole::MEMBER_DECLARATION => RenameOperationRole::DECLARATION,
-            VirtualPhpSourceFileNodeMatchRole::MEMBER_USAGE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::PARAMETER_DECLARATION => RenameOperationRole::DECLARATION,
+            VirtualPhpSourceFileNodeMatchRole::PARAMETER_USAGE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::PARAMETER_LOCAL_USAGE => RenameOperationRole::USAGE,
             default => null,
         };
     }

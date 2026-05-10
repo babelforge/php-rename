@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a class-constant rename intent anchored to a class name.
@@ -27,9 +28,9 @@ final readonly class ClassConstantRenameRequest implements RenameRequestInterfac
         public string $newConstantName,
         public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
-        $this->guardNotEmpty($className, 'className');
-        $this->guardNotEmpty($constantName, 'constantName');
-        $this->guardNotEmpty($newConstantName, 'newConstantName');
+        RenameInputValidator::guardFqcn($className, 'className');
+        RenameInputValidator::guardShortIdentifier($constantName, 'constantName');
+        RenameInputValidator::guardShortIdentifier($newConstantName, 'newConstantName');
     }
 
     /**
@@ -46,20 +47,5 @@ final readonly class ClassConstantRenameRequest implements RenameRequestInterfac
     public function newName(): string
     {
         return $this->newConstantName;
-    }
-
-    /**
-     * Ensures that a rename input is not empty.
-     *
-     * @param string $value the input value
-     * @param string $name  the input name
-     *
-     * @throws \InvalidArgumentException when the input is empty
-     */
-    private function guardNotEmpty(string $value, string $name): void
-    {
-        if ('' === trim($value)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" rename input cannot be empty.', $name));
-        }
     }
 }

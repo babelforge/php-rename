@@ -45,4 +45,37 @@ final class ParameterRenameRequestTest extends TestCase
 
         new ParameterRenameRequest('App\\Mailer', 'send', '', 'emailMessage');
     }
+
+    /**
+     * Ensures invalid current parameter names are rejected.
+     */
+    public function testItRejectsInvalidParameterName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "parameterName" rename input must be a valid PHP identifier.');
+
+        new ParameterRenameRequest('App\\Mailer', 'send', '$message', 'emailMessage');
+    }
+
+    /**
+     * Ensures invalid replacement parameter names are rejected.
+     */
+    public function testItRejectsInvalidNewParameterName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newParameterName" rename input must be a valid PHP identifier.');
+
+        new ParameterRenameRequest('App\\Mailer', 'send', 'message', '123EmailMessage');
+    }
+
+    /**
+     * Ensures invalid function-like names are rejected.
+     */
+    public function testItRejectsInvalidFunctionLikeName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "functionLikeName" rename input must be a valid PHP identifier.');
+
+        new ParameterRenameRequest('App\\Mailer', '123send', 'message', 'emailMessage');
+    }
 }

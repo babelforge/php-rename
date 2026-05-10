@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a method rename intent anchored to a class name.
@@ -27,9 +28,9 @@ final readonly class MethodRenameRequest implements RenameRequestInterface
         public string $newMethodName,
         public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
-        $this->guardNotEmpty($className, 'className');
-        $this->guardNotEmpty($methodName, 'methodName');
-        $this->guardNotEmpty($newMethodName, 'newMethodName');
+        RenameInputValidator::guardFqcn($className, 'className');
+        RenameInputValidator::guardShortIdentifier($methodName, 'methodName');
+        RenameInputValidator::guardShortIdentifier($newMethodName, 'newMethodName');
     }
 
     /**
@@ -46,20 +47,5 @@ final readonly class MethodRenameRequest implements RenameRequestInterface
     public function newName(): string
     {
         return $this->newMethodName;
-    }
-
-    /**
-     * Ensures that a rename input is not empty.
-     *
-     * @param string $value the input value
-     * @param string $name  the input name
-     *
-     * @throws \InvalidArgumentException when the input is empty
-     */
-    private function guardNotEmpty(string $value, string $name): void
-    {
-        if ('' === trim($value)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" rename input cannot be empty.', $name));
-        }
     }
 }

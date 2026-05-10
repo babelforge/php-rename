@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph;
+namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
@@ -15,27 +15,34 @@ use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
 
 /**
- * Plans class-constant renames from `member-graph` semantic facts.
+ * Plans fully-qualified class-like owner renames from `member-graph` semantic facts.
  */
-final readonly class MemberGraphClassConstantRenamePlanner implements ClassConstantRenamePlannerInterface
+final readonly class MemberGraphClassFqcnRenamePlanner implements ClassFqcnRenamePlannerInterface
 {
     /**
-     * Plans a class-constant rename.
+     * Plans a fully-qualified class-like owner rename.
      *
-     * @param ClassConstantRenameRequest $request the class-constant rename request
+     * @param ClassFqcnRenameRequest     $request the class FQCN rename request
      * @param MemberDependencyGraphBuild $build   the member graph build used to resolve declarations and usages
      */
-    public function plan(ClassConstantRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
+    public function plan(ClassFqcnRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
-        new MemberGraphRenameConflictGuard()->reportClassConstantConflicts($diagnostics, $request, $build);
+
+        if (new MemberGraphRenameNoOpGuard()->reportNoOp($diagnostics, $request)) {
+            return new RenamePlan($request, $operations, $diagnostics);
+        }
+
+        new MemberGraphRenameConflictGuard()->reportClassFqcnConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
-            ->classConstant($request->className, $request->constantName);
+            ->owner($request->className);
 
         foreach ($matches as $match) {
             $operationRole = $this->operationRole($match->role);
@@ -43,26 +50,26 @@ final readonly class MemberGraphClassConstantRenamePlanner implements ClassConst
             if (null === $operationRole) {
                 $diagnostics->add(new RenameDiagnostic(
                     severity: RenameDiagnosticSeverity::WARNING,
-                    message: 'Unsupported class-constant rename source-node match role.',
+                    message: 'Unsupported class FQCN rename source-node match role.',
                 ));
 
                 continue;
             }
 
             $operations->add(new RenameOperation(
-                symbolKind: RenameSymbolKind::CLASS_CONSTANT,
+                symbolKind: RenameSymbolKind::CLASS_,
                 role: $operationRole,
                 file: $match->virtualFile,
                 node: $match->node,
-                oldName: $request->constantName,
-                newName: $request->newConstantName,
+                oldName: $request->oldName(),
+                newName: $request->newName(),
             ));
         }
 
         if (0 === count($operations)) {
             $diagnostics->add(new RenameDiagnostic(
                 severity: RenameDiagnosticSeverity::WARNING,
-                message: 'No source-node match was found for the requested class-constant rename.',
+                message: 'No source-node match was found for the requested class FQCN rename.',
             ));
         }
 
@@ -81,8 +88,8 @@ final readonly class MemberGraphClassConstantRenamePlanner implements ClassConst
     private function operationRole(VirtualPhpSourceFileNodeMatchRole $role): ?RenameOperationRole
     {
         return match ($role) {
-            VirtualPhpSourceFileNodeMatchRole::MEMBER_DECLARATION => RenameOperationRole::DECLARATION,
-            VirtualPhpSourceFileNodeMatchRole::MEMBER_USAGE => RenameOperationRole::USAGE,
+            VirtualPhpSourceFileNodeMatchRole::OWNER_DECLARATION => RenameOperationRole::DECLARATION,
+            VirtualPhpSourceFileNodeMatchRole::OWNER_USAGE => RenameOperationRole::USAGE,
             default => null,
         };
     }

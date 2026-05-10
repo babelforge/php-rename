@@ -56,8 +56,30 @@ final class FunctionRenameRequestTest extends TestCase
     public function testItRejectsNamespacedNewFunctionName(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The "newFunctionName" rename input must be a short function name.');
+        $this->expectExceptionMessage('The "newFunctionName" rename input must be a short name.');
 
         new FunctionRenameRequest('App\\send_mail', 'App\\deliver_mail');
+    }
+
+    /**
+     * Ensures invalid function names are rejected.
+     */
+    public function testItRejectsInvalidFunctionName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "functionName" rename input must be a valid PHP FQCN.');
+
+        new FunctionRenameRequest('App\\123_send_mail', 'deliver_mail');
+    }
+
+    /**
+     * Ensures invalid replacement function names are rejected.
+     */
+    public function testItRejectsInvalidNewFunctionName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newFunctionName" rename input must be a valid PHP identifier.');
+
+        new FunctionRenameRequest('App\\send_mail', '123_deliver_mail');
     }
 }

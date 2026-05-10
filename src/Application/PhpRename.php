@@ -26,14 +26,14 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassConstantRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassFqcnRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphClassRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionFqcnRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphFunctionRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphMethodRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphParameterRenamePlanner;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\MemberGraphPropertyRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassConstantRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassFqcnRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionFqcnRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphMethodRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphParameterRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphPropertyRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\AstRenamePlanApplier;
 
 /**

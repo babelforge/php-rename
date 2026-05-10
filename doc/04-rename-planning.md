@@ -138,11 +138,14 @@ The planner must report diagnostics instead of silently guessing.
 
 Examples:
 
+- rename request is a no-op;
 - target method not found;
 - replacement name collides with an existing method;
 - usage cannot be resolved safely;
 - dynamic call is ambiguous;
 - source node cannot be located.
+
+No-op renames are handled before `member-graph` lookup. They produce a warning diagnostic and an empty operation list.
 
 ## Conflict Policy
 

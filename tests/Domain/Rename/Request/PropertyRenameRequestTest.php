@@ -62,4 +62,26 @@ final class PropertyRenameRequestTest extends TestCase
 
         new PropertyRenameRequest(self::class, 'oldProperty', "\t");
     }
+
+    /**
+     * Ensures invalid current property names are rejected.
+     */
+    public function testItRejectsInvalidPropertyName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "propertyName" rename input must be a valid PHP identifier.');
+
+        new PropertyRenameRequest(self::class, '$oldProperty', 'newProperty');
+    }
+
+    /**
+     * Ensures invalid replacement property names are rejected.
+     */
+    public function testItRejectsInvalidNewPropertyName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newPropertyName" rename input must be a valid PHP identifier.');
+
+        new PropertyRenameRequest(self::class, 'oldProperty', '123NewProperty');
+    }
 }

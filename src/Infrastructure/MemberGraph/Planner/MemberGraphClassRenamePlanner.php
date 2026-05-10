@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph;
+namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
@@ -15,25 +15,32 @@ use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
 
 /**
- * Plans fully-qualified class-like owner renames from `member-graph` semantic facts.
+ * Plans class-like owner renames from `member-graph` semantic facts.
  */
-final readonly class MemberGraphClassFqcnRenamePlanner implements ClassFqcnRenamePlannerInterface
+final readonly class MemberGraphClassRenamePlanner implements ClassRenamePlannerInterface
 {
     /**
-     * Plans a fully-qualified class-like owner rename.
+     * Plans a class-like owner rename.
      *
-     * @param ClassFqcnRenameRequest     $request the class FQCN rename request
+     * @param ClassRenameRequest         $request the class rename request
      * @param MemberDependencyGraphBuild $build   the member graph build used to resolve declarations and usages
      */
-    public function plan(ClassFqcnRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
+    public function plan(ClassRenameRequest $request, MemberDependencyGraphBuild $build): RenamePlan
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
-        new MemberGraphRenameConflictGuard()->reportClassFqcnConflicts($diagnostics, $request, $build);
+
+        if (new MemberGraphRenameNoOpGuard()->reportNoOp($diagnostics, $request)) {
+            return new RenamePlan($request, $operations, $diagnostics);
+        }
+
+        new MemberGraphRenameConflictGuard()->reportClassConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->owner($request->className);
 
@@ -43,7 +50,7 @@ final readonly class MemberGraphClassFqcnRenamePlanner implements ClassFqcnRenam
             if (null === $operationRole) {
                 $diagnostics->add(new RenameDiagnostic(
                     severity: RenameDiagnosticSeverity::WARNING,
-                    message: 'Unsupported class FQCN rename source-node match role.',
+                    message: 'Unsupported class rename source-node match role.',
                 ));
 
                 continue;
@@ -55,14 +62,14 @@ final readonly class MemberGraphClassFqcnRenamePlanner implements ClassFqcnRenam
                 file: $match->virtualFile,
                 node: $match->node,
                 oldName: $request->oldName(),
-                newName: $request->newName(),
+                newName: $request->newClassName,
             ));
         }
 
         if (0 === count($operations)) {
             $diagnostics->add(new RenameDiagnostic(
                 severity: RenameDiagnosticSeverity::WARNING,
-                message: 'No source-node match was found for the requested class FQCN rename.',
+                message: 'No source-node match was found for the requested class rename.',
             ));
         }
 

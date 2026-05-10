@@ -29,6 +29,8 @@ The current test suite covers:
 - function FQCN rename planning and AST application against a real `member-graph` build.
 - parameter rename planning and AST application against a real `member-graph` build.
 - conflict policy for blocking errors and report-only warnings across every supported rename family.
+- no-op rename planning across every supported rename family.
+- request validation for invalid identifiers and FQCN-like names.
 
 ## Testing Direction
 
@@ -60,6 +62,8 @@ Priority cases:
 - unresolved dynamic calls reported as diagnostics.
 - conflict policy blocks application when configured as `FAIL`;
 - conflict policy reports warnings while allowing application when configured as `REPORT`.
+- invalid rename inputs throw before planning;
+- no-op renames produce warning diagnostics and empty plans.
 
 ## Maintenance Rules
 

@@ -62,4 +62,26 @@ final class ClassConstantRenameRequestTest extends TestCase
 
         new ClassConstantRenameRequest(self::class, 'OLD_CONSTANT', "\t");
     }
+
+    /**
+     * Ensures invalid current class-constant names are rejected.
+     */
+    public function testItRejectsInvalidConstantName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "constantName" rename input must be a valid PHP identifier.');
+
+        new ClassConstantRenameRequest(self::class, '123_OLD_CONSTANT', 'NEW_CONSTANT');
+    }
+
+    /**
+     * Ensures invalid replacement class-constant names are rejected.
+     */
+    public function testItRejectsInvalidNewConstantName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newConstantName" rename input must be a valid PHP identifier.');
+
+        new ClassConstantRenameRequest(self::class, 'OLD_CONSTANT', '123_NEW_CONSTANT');
+    }
 }

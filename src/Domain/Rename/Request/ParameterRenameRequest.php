@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a method or function parameter rename intent.
@@ -31,9 +32,15 @@ final readonly class ParameterRenameRequest implements RenameRequestInterface
         public ?int $parameterIndex = null,
         public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
-        $this->guardNotEmpty($functionLikeName, 'functionLikeName');
-        $this->guardNotEmpty($parameterName, 'parameterName');
-        $this->guardNotEmpty($newParameterName, 'newParameterName');
+        if ('' !== $owner) {
+            RenameInputValidator::guardFqcn($owner, 'owner');
+            RenameInputValidator::guardShortIdentifier($functionLikeName, 'functionLikeName');
+        } else {
+            RenameInputValidator::guardFqcn($functionLikeName, 'functionLikeName');
+        }
+
+        RenameInputValidator::guardShortIdentifier($parameterName, 'parameterName');
+        RenameInputValidator::guardShortIdentifier($newParameterName, 'newParameterName');
 
         if (null !== $parameterIndex && 0 > $parameterIndex) {
             throw new \InvalidArgumentException('The "parameterIndex" rename input must be greater than or equal to zero.');
@@ -54,20 +61,5 @@ final readonly class ParameterRenameRequest implements RenameRequestInterface
     public function newName(): string
     {
         return $this->newParameterName;
-    }
-
-    /**
-     * Ensures that a rename input is not empty.
-     *
-     * @param string $value the input value
-     * @param string $name  the input name
-     *
-     * @throws \InvalidArgumentException when the input is empty
-     */
-    private function guardNotEmpty(string $value, string $name): void
-    {
-        if ('' === trim($value)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" rename input cannot be empty.', $name));
-        }
     }
 }

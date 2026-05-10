@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph;
+namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
@@ -17,6 +17,8 @@ use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
 
 /**
  * Plans method renames from `member-graph` semantic facts.
@@ -33,6 +35,11 @@ final readonly class MemberGraphMethodRenamePlanner implements MethodRenamePlann
     {
         $diagnostics = RenameDiagnosticCollection::empty();
         $operations = RenameOperationCollection::empty();
+
+        if (new MemberGraphRenameNoOpGuard()->reportNoOp($diagnostics, $request)) {
+            return new RenamePlan($request, $operations, $diagnostics);
+        }
+
         new MemberGraphRenameConflictGuard()->reportMethodConflicts($diagnostics, $request, $build);
         $matches = MemberGraphSourceNodeLocator::fromBuild($build)
             ->method($request->className, $request->methodName);

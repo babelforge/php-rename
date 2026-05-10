@@ -44,4 +44,26 @@ final class ClassFqcnRenameRequestTest extends TestCase
 
         new ClassFqcnRenameRequest('App\\Mailer', '');
     }
+
+    /**
+     * Ensures invalid current class-like FQCNs are rejected.
+     */
+    public function testItRejectsInvalidClassName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "className" rename input must be a valid PHP FQCN.');
+
+        new ClassFqcnRenameRequest('App\\123Mailer', 'App\\Infrastructure\\Sender');
+    }
+
+    /**
+     * Ensures invalid replacement class-like FQCNs are rejected.
+     */
+    public function testItRejectsInvalidNewClassName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newClassName" rename input must be a valid PHP FQCN.');
+
+        new ClassFqcnRenameRequest('App\\Mailer', 'App\\Infrastructure\\123Sender');
+    }
 }

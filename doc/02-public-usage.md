@@ -23,6 +23,22 @@ The default policy is `RenameConflictPolicy::FAIL`. It emits an error diagnostic
 
 `RenameConflictPolicy::REPORT` emits a warning diagnostic and keeps the plan applicable.
 
+## Input Validation And No-Op Renames
+
+Rename requests validate PHP identifiers and FQCN-like names before planning.
+
+Invalid names throw `InvalidArgumentException` before `member-graph` lookup.
+
+No-op renames produce an empty plan with a warning diagnostic and do not mutate virtual files:
+
+```php
+$result = $renamer->renameMethod(
+    className: App\Service\UserMailer::class,
+    methodName: 'send',
+    newMethodName: 'send',
+);
+```
+
 ## Create From Directories
 
 Use this mode when `PhpRename` should build its own `member-graph` input:

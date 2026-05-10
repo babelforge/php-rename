@@ -51,8 +51,30 @@ final class ClassRenameRequestTest extends TestCase
     public function testItRejectsNamespacedNewClassName(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('The "newClassName" rename input must be a short class name.');
+        $this->expectExceptionMessage('The "newClassName" rename input must be a short name.');
 
         new ClassRenameRequest('App\\Mailer', 'App\\TransactionalMailer');
+    }
+
+    /**
+     * Ensures invalid class-like owner names are rejected.
+     */
+    public function testItRejectsInvalidClassName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "className" rename input must be a valid PHP FQCN.');
+
+        new ClassRenameRequest('App\\\\Mailer', 'TransactionalMailer');
+    }
+
+    /**
+     * Ensures invalid replacement class-like owner names are rejected.
+     */
+    public function testItRejectsInvalidNewClassName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newClassName" rename input must be a valid PHP identifier.');
+
+        new ClassRenameRequest('App\\Mailer', '123Mailer');
     }
 }

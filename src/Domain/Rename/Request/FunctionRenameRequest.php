@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRename\Domain\Rename\Request;
 
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a function rename intent.
@@ -25,12 +26,8 @@ final readonly class FunctionRenameRequest implements RenameRequestInterface
         public string $newFunctionName,
         public RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
     ) {
-        $this->guardNotEmpty($functionName, 'functionName');
-        $this->guardNotEmpty($newFunctionName, 'newFunctionName');
-
-        if (str_contains($newFunctionName, '\\')) {
-            throw new \InvalidArgumentException('The "newFunctionName" rename input must be a short function name.');
-        }
+        RenameInputValidator::guardFqcn($functionName, 'functionName');
+        RenameInputValidator::guardShortIdentifier($newFunctionName, 'newFunctionName');
     }
 
     /**
@@ -47,21 +44,6 @@ final readonly class FunctionRenameRequest implements RenameRequestInterface
     public function newName(): string
     {
         return $this->newFunctionName;
-    }
-
-    /**
-     * Ensures that a rename input is not empty.
-     *
-     * @param string $value the input value
-     * @param string $name  the input name
-     *
-     * @throws \InvalidArgumentException when the input is empty
-     */
-    private function guardNotEmpty(string $value, string $name): void
-    {
-        if ('' === trim($value)) {
-            throw new \InvalidArgumentException(sprintf('The "%s" rename input cannot be empty.', $name));
-        }
     }
 
     /**

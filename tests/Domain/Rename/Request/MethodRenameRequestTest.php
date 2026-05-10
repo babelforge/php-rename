@@ -60,4 +60,26 @@ final class MethodRenameRequestTest extends TestCase
 
         new MethodRenameRequest(self::class, 'oldMethod', "\t");
     }
+
+    /**
+     * Ensures invalid current method names are rejected.
+     */
+    public function testItRejectsInvalidMethodName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "methodName" rename input must be a valid PHP identifier.');
+
+        new MethodRenameRequest(self::class, '123OldMethod', 'newMethod');
+    }
+
+    /**
+     * Ensures invalid replacement method names are rejected.
+     */
+    public function testItRejectsInvalidNewMethodName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newMethodName" rename input must be a valid PHP identifier.');
+
+        new MethodRenameRequest(self::class, 'oldMethod', '123NewMethod');
+    }
 }

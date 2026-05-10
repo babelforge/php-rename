@@ -44,4 +44,26 @@ final class FunctionFqcnRenameRequestTest extends TestCase
 
         new FunctionFqcnRenameRequest('App\\send_mail', '');
     }
+
+    /**
+     * Ensures invalid current function FQCNs are rejected.
+     */
+    public function testItRejectsInvalidFunctionName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "functionName" rename input must be a valid PHP FQCN.');
+
+        new FunctionFqcnRenameRequest('App\\123_send_mail', 'Tools\\deliver_mail');
+    }
+
+    /**
+     * Ensures invalid replacement function FQCNs are rejected.
+     */
+    public function testItRejectsInvalidNewFunctionName(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "newFunctionName" rename input must be a valid PHP FQCN.');
+
+        new FunctionFqcnRenameRequest('App\\send_mail', 'Tools\\123_deliver_mail');
+    }
 }
