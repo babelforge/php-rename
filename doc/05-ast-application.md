@@ -87,6 +87,13 @@ It also supports parameter renaming for:
 
 For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 
+It also supports namespace-level constant renaming for:
+
+- `PhpParser\Node\Const_`;
+- `PhpParser\Node\Expr\ConstFetch`.
+
+For constant FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Constant fetch names are replaced with the replacement short name, while the containing namespace gets a `use const` import when needed. If importing would collide with an existing alias, the fetch falls back to `PhpParser\Node\Name\FullyQualified`.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported operation kinds or node types produce diagnostics instead of triggering fallback source inspection.

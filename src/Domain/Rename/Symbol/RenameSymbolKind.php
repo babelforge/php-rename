@@ -11,6 +11,7 @@ enum RenameSymbolKind
 {
     case CLASS_;
     case FUNCTION_;
+    case CONSTANT;
     case METHOD;
     case PROPERTY;
     case CLASS_CONSTANT;

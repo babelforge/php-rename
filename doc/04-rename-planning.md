@@ -98,6 +98,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The difference is the replacement contract: `renameFunctionFqcn()` receives a fully-qualified replacement function name. The planner still does not discover additional candidates by itself.
 
+For namespace-level constant renaming, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->constant('App\\Config\\ENABLED');
+```
+
+Short constant rename receives a fully-qualified current constant name and a short replacement constant name. Constant FQCN rename receives fully-qualified current and replacement names. `use const` imports are handled as import facts, not as member usage matches.
+
 For parameter renaming, planning starts from:
 
 ```php
@@ -162,10 +173,11 @@ Current conflict checks consume `member-graph` scope facts for:
 - class constants and enum cases in the resolved owner scope;
 - class-like declarations in the target namespace;
 - function declarations in the target namespace;
-- class-like and function import aliases in usage files for FQCN renames, including normal imports, grouped imports, and explicit aliases;
+- namespace-level constant declarations in the target namespace;
+- class-like, function, and constant import aliases in usage files for FQCN renames, including normal imports, grouped imports, and explicit aliases;
 - same-signature parameters and local variables in the declaring body.
 
-Conflict comparisons follow PHP naming semantics: class-like, function, and method collisions are checked case-insensitively, while properties, class constants, enum cases, parameters, and local variables remain case-sensitive.
+Conflict comparisons follow PHP naming semantics: class-like, function, and method collisions are checked case-insensitively, while properties, class constants, enum cases, namespace-level constants, parameters, and local variables remain case-sensitive.
 
 Method renames involving PHP magic method names also emit non-blocking semantic warnings because they can change runtime behavior. These warnings are owned by `php-rename` policy and do not require extra `member-graph` facts.
 
@@ -193,6 +205,10 @@ Method renames involving PHP magic method names also emit non-blocking semantic 
 
 `MemberGraphFunctionFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::function(...)`, but stores fully-qualified old and new function names in the rename operations.
 
+`MemberGraphConstantRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::constant(...)`.
+
+`MemberGraphConstantFqcnRenamePlanner` also follows the same pattern with `MemberGraphSourceNodeLocator::constant(...)`, but stores fully-qualified old and new constant names in the rename operations.
+
 `MemberGraphParameterRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::parameter(...)`.
 
 Each planner also asks `MemberGraphRenameConflictGuard` to convert neutral scope facts from `MemberGraphSymbolScopeLocator` or `MemberGraphSourceNodeLocator::parameterScope(...)` into policy-driven diagnostics.
@@ -216,6 +232,7 @@ Examples:
 - promoted-property `Param` match: the `Param` docblock itself is eligible.
 - `PropertyProperty` match: the parent `Property` docblock is eligible.
 - `Const_` match: the parent `ClassConst` docblock is eligible.
+- namespace-level `Const_` match: the parent `Stmt\Const_` docblock is eligible.
 
 Parent links are expected because `php-source-registry` uses `UserLandParser`, and `UserLandParser` runs a parent-connecting visitor.
 

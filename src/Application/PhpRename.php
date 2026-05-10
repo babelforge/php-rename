@@ -9,6 +9,8 @@ use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ConstantFqcnRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\ConstantRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\EnumCaseRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
@@ -22,6 +24,8 @@ use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
@@ -31,6 +35,8 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassConstantRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphConstantFqcnRenamePlanner;
+use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphConstantRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphEnumCaseRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphFunctionRenamePlanner;
@@ -56,6 +62,8 @@ final readonly class PhpRename
      * @param ClassFqcnRenamePlannerInterface     $classFqcnRenamePlanner     the class FQCN rename planner
      * @param FunctionRenamePlannerInterface      $functionRenamePlanner      the function rename planner
      * @param FunctionFqcnRenamePlannerInterface  $functionFqcnRenamePlanner  the function FQCN rename planner
+     * @param ConstantRenamePlannerInterface      $constantRenamePlanner      the constant rename planner
+     * @param ConstantFqcnRenamePlannerInterface  $constantFqcnRenamePlanner  the constant FQCN rename planner
      * @param ParameterRenamePlannerInterface     $parameterRenamePlanner     the parameter rename planner
      * @param RenamePlanApplierInterface          $renamePlanApplier          the rename plan applier
      */
@@ -69,6 +77,8 @@ final readonly class PhpRename
         private ClassFqcnRenamePlannerInterface $classFqcnRenamePlanner,
         private FunctionRenamePlannerInterface $functionRenamePlanner,
         private FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner,
+        private ConstantRenamePlannerInterface $constantRenamePlanner,
+        private ConstantFqcnRenamePlannerInterface $constantFqcnRenamePlanner,
         private ParameterRenamePlannerInterface $parameterRenamePlanner,
         private RenamePlanApplierInterface $renamePlanApplier,
     ) {
@@ -110,6 +120,8 @@ final readonly class PhpRename
      * @param FunctionFqcnRenamePlannerInterface|null  $functionFqcnRenamePlanner  the optional function FQCN rename planner override
      * @param ParameterRenamePlannerInterface|null     $parameterRenamePlanner     the optional parameter rename planner override
      * @param EnumCaseRenamePlannerInterface|null      $enumCaseRenamePlanner      the optional enum-case rename planner override
+     * @param ConstantRenamePlannerInterface|null      $constantRenamePlanner      the optional constant rename planner override
+     * @param ConstantFqcnRenamePlannerInterface|null  $constantFqcnRenamePlanner  the optional constant FQCN rename planner override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
@@ -123,6 +135,8 @@ final readonly class PhpRename
         ?FunctionFqcnRenamePlannerInterface $functionFqcnRenamePlanner = null,
         ?ParameterRenamePlannerInterface $parameterRenamePlanner = null,
         ?EnumCaseRenamePlannerInterface $enumCaseRenamePlanner = null,
+        ?ConstantRenamePlannerInterface $constantRenamePlanner = null,
+        ?ConstantFqcnRenamePlannerInterface $constantFqcnRenamePlanner = null,
     ): self {
         return new self(
             build: $build,
@@ -134,6 +148,8 @@ final readonly class PhpRename
             classFqcnRenamePlanner: $classFqcnRenamePlanner ?? new MemberGraphClassFqcnRenamePlanner(),
             functionRenamePlanner: $functionRenamePlanner ?? new MemberGraphFunctionRenamePlanner(),
             functionFqcnRenamePlanner: $functionFqcnRenamePlanner ?? new MemberGraphFunctionFqcnRenamePlanner(),
+            constantRenamePlanner: $constantRenamePlanner ?? new MemberGraphConstantRenamePlanner(),
+            constantFqcnRenamePlanner: $constantFqcnRenamePlanner ?? new MemberGraphConstantFqcnRenamePlanner(),
             parameterRenamePlanner: $parameterRenamePlanner ?? new MemberGraphParameterRenamePlanner(),
             renamePlanApplier: $renamePlanApplier ?? new AstRenamePlanApplier(),
         );
@@ -471,6 +487,86 @@ final readonly class PhpRename
     ): RenameResult {
         return $this->renamePlanApplier->apply(
             plan: $this->planFunctionFqcnRename($functionName, $newFunctionName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic namespace-level constant rename.
+     *
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement short constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planConstantRename(
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
+        return $this->constantRenamePlanner->plan(
+            request: new ConstantRenameRequest($constantName, $newConstantName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic namespace-level constant rename to virtual file AST nodes.
+     *
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement short constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameConstant(
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planConstantRename($constantName, $newConstantName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a semantic namespace-level constant rename to another fully-qualified name.
+     *
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement fully-qualified constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function planConstantFqcnRename(
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenamePlan {
+        return $this->constantFqcnRenamePlanner->plan(
+            request: new ConstantFqcnRenameRequest($constantName, $newConstantName, $conflictPolicy),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a semantic namespace-level constant FQCN rename to virtual file AST nodes.
+     *
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement fully-qualified constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function renameConstantFqcn(
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameResult {
+        return $this->renamePlanApplier->apply(
+            plan: $this->planConstantFqcnRename($constantName, $newConstantName, $conflictPolicy),
             build: $this->build,
         );
     }

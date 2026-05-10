@@ -249,4 +249,40 @@ $result = $renamer->renameFunctionFqcn(
 
 The declaration namespace and short function name are mutated in memory. Calls returned by `member-graph` are rewritten to the replacement short name, and the containing namespace gets a `use function` import when needed. Physical file moves remain out of scope.
 
+## Plan And Apply A Constant Rename
+
+Namespace-level constant rename uses the fully-qualified current constant name and a short replacement name:
+
+```php
+$plan = $renamer->planConstantRename(
+    constantName: 'App\\Config\\ENABLED',
+    newConstantName: 'ACTIVE',
+);
+
+$result = $renamer->renameConstant(
+    constantName: 'App\\Config\\ENABLED',
+    newConstantName: 'ACTIVE',
+);
+```
+
+The planner uses `MemberGraphSourceNodeLocator::constant(...)`. The applier mutates constant declarations, constant fetches, and existing `use const` imports in touched files.
+
+## Plan And Apply A Constant FQCN Rename
+
+Constant FQCN rename changes the full logical namespace-level constant name:
+
+```php
+$plan = $renamer->planConstantFqcnRename(
+    constantName: 'App\\Config\\ENABLED',
+    newConstantName: 'Tools\\ACTIVE',
+);
+
+$result = $renamer->renameConstantFqcn(
+    constantName: 'App\\Config\\ENABLED',
+    newConstantName: 'Tools\\ACTIVE',
+);
+```
+
+The declaration namespace and short constant name are mutated in memory. Constant fetches returned by `member-graph` are rewritten to the replacement short name, and the containing namespace gets a `use const` import when needed. If an import alias collision is reported with `RenameConflictPolicy::REPORT`, application falls back to a fully-qualified constant fetch.
+
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

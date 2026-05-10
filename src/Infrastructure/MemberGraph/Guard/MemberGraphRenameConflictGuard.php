@@ -17,6 +17,8 @@ use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
@@ -283,6 +285,75 @@ final readonly class MemberGraphRenameConflictGuard
     }
 
     /**
+     * Reports conflicts for one short namespace-level constant rename request.
+     *
+     * @param RenameDiagnosticCollection $diagnostics the diagnostics to update
+     * @param ConstantRenameRequest      $request     the rename request
+     * @param MemberDependencyGraphBuild $build       the member graph build
+     */
+    public function reportConstantConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        ConstantRenameRequest $request,
+        MemberDependencyGraphBuild $build,
+    ): void {
+        $scopeLocator = MemberGraphSymbolScopeLocator::fromBuild($build);
+        $scope = $scopeLocator->constantNamespaceScope($this->namespaceName($request->constantName));
+
+        $this->reportShortNameConflict(
+            diagnostics: $diagnostics,
+            facts: $scope->constantDeclarations(),
+            oldName: $request->oldName(),
+            newName: $request->newName(),
+            policy: $request->conflictPolicy,
+            message: sprintf('The constant name "%s" already exists in the target namespace.', $request->newName()),
+            caseSensitive: true,
+        );
+        $this->reportConstantImportAliasConflicts(
+            diagnostics: $diagnostics,
+            oldName: $request->constantName,
+            newName: $this->namespaceName($request->constantName).'\\'.$request->newConstantName,
+            policy: $request->conflictPolicy,
+            build: $build,
+            scopeLocator: $scopeLocator,
+        );
+    }
+
+    /**
+     * Reports conflicts for one namespace-level constant FQCN rename request.
+     *
+     * @param RenameDiagnosticCollection $diagnostics the diagnostics to update
+     * @param ConstantFqcnRenameRequest  $request     the rename request
+     * @param MemberDependencyGraphBuild $build       the member graph build
+     */
+    public function reportConstantFqcnConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        ConstantFqcnRenameRequest $request,
+        MemberDependencyGraphBuild $build,
+    ): void {
+        $newName = $request->newName();
+        $scopeLocator = MemberGraphSymbolScopeLocator::fromBuild($build);
+        $scope = $scopeLocator->constantNamespaceScope($this->namespaceName($newName));
+
+        $this->reportShortNameConflict(
+            diagnostics: $diagnostics,
+            facts: $scope->constantDeclarations(),
+            oldName: $this->shortName($request->oldName()),
+            newName: $this->shortName($newName),
+            policy: $request->conflictPolicy,
+            message: sprintf('The constant FQCN "%s" already exists.', $newName),
+            caseSensitive: true,
+        );
+        $this->reportConstantImportAliasConflicts(
+            diagnostics: $diagnostics,
+            oldName: $request->oldName(),
+            newName: $newName,
+            policy: $request->conflictPolicy,
+            build: $build,
+            scopeLocator: $scopeLocator,
+        );
+    }
+
+    /**
      * Reports conflicts for one parameter rename request.
      *
      * @param RenameDiagnosticCollection $diagnostics the diagnostics to update
@@ -482,6 +553,51 @@ final readonly class MemberGraphRenameConflictGuard
             $diagnostics->add(new RenameDiagnostic(
                 severity: $this->severity($request->conflictPolicy),
                 message: sprintf('The function import alias "%s" already exists in a usage file.', $newShortName),
+            ));
+        }
+    }
+
+    /**
+     * Reports constant import alias conflicts for one namespace-level constant rename.
+     *
+     * @param RenameDiagnosticCollection    $diagnostics  the diagnostics to update
+     * @param string                        $oldName      the old fully-qualified constant name
+     * @param string                        $newName      the new fully-qualified constant name
+     * @param RenameConflictPolicy          $policy       the rename conflict policy
+     * @param MemberDependencyGraphBuild    $build        the member graph build
+     * @param MemberGraphSymbolScopeLocator $scopeLocator the symbol scope locator
+     */
+    private function reportConstantImportAliasConflicts(
+        RenameDiagnosticCollection $diagnostics,
+        string $oldName,
+        string $newName,
+        RenameConflictPolicy $policy,
+        MemberDependencyGraphBuild $build,
+        MemberGraphSymbolScopeLocator $scopeLocator,
+    ): void {
+        $newShortName = $this->shortName($newName);
+        $newNamespaceName = $this->namespaceName($newName);
+        $visitedVirtualFiles = [];
+        $matches = MemberGraphSourceNodeLocator::fromBuild($build)->constant($oldName)->memberUsages();
+
+        foreach ($matches as $match) {
+            if (true === ($visitedVirtualFiles[$match->virtualFile->virtualFilePath] ?? false)) {
+                continue;
+            }
+
+            $visitedVirtualFiles[$match->virtualFile->virtualFilePath] = true;
+
+            if ($this->nodeNamespaceName($match->node) === $newNamespaceName) {
+                continue;
+            }
+
+            if (!$this->hasImportAliasConflict($scopeLocator->fileImportScope($match->virtualFile)->constantImports(), $oldName, $newName, $newShortName, true)) {
+                continue;
+            }
+
+            $diagnostics->add(new RenameDiagnostic(
+                severity: $this->severity($policy),
+                message: sprintf('The constant import alias "%s" already exists in a usage file.', $newShortName),
             ));
         }
     }

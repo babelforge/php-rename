@@ -188,6 +188,38 @@ final class PhpRenameNoOpIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures short constant no-op renames produce an empty warning plan.
+     */
+    public function testItHandlesConstantNoOpRename(): void
+    {
+        $renamer = $this->renamerWithFixture('constants.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            PHP);
+
+        $this->assertNoOpResult($renamer->renameConstant('App\\Config\\ENABLED', 'ENABLED'));
+    }
+
+    /**
+     * Ensures constant FQCN no-op renames produce an empty warning plan.
+     */
+    public function testItHandlesConstantFqcnNoOpRename(): void
+    {
+        $renamer = $this->renamerWithFixture('constant_fqcn.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            PHP);
+
+        $this->assertNoOpResult($renamer->renameConstantFqcn('App\\Config\\ENABLED', 'App\\Config\\ENABLED'));
+    }
+
+    /**
      * Ensures parameter no-op renames produce an empty warning plan.
      */
     public function testItHandlesParameterNoOpRename(): void

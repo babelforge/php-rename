@@ -621,6 +621,95 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures short constant conflicts block application by default and can be reported as warnings.
+     */
+    public function testItHandlesConstantRenameConflicts(): void
+    {
+        $renamer = $this->renamerWithFixture('constants.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            const ACTIVE = false;
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameConstant('App\\Config\\ENABLED', 'ACTIVE'), 'const ENABLED = true;');
+        $this->assertConflictReportsAndApplies($renamer->renameConstant('App\\Config\\ENABLED', 'ACTIVE', RenameConflictPolicy::REPORT), 'const ACTIVE = true;');
+    }
+
+    /**
+     * Ensures constant FQCN conflicts block application by default and can be reported as warnings.
+     */
+    public function testItHandlesConstantFqcnRenameConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App/Config', 0o777, true);
+        mkdir($srcDirectory.'/Tools', 0o777, true);
+        file_put_contents($srcDirectory.'/App/Config/constants.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            PHP);
+        file_put_contents($srcDirectory.'/Tools/constants.php', <<<'PHP'
+            <?php
+
+            namespace Tools;
+
+            const ACTIVE = false;
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameConstantFqcn('App\\Config\\ENABLED', 'Tools\\ACTIVE'), 'namespace App\\Config;');
+        $this->assertConflictReportsAndApplies($renamer->renameConstantFqcn('App\\Config\\ENABLED', 'Tools\\ACTIVE', RenameConflictPolicy::REPORT), 'namespace Tools;');
+    }
+
+    /**
+     * Ensures constant FQCN import alias conflicts are reported before application.
+     */
+    public function testItHandlesConstantFqcnImportAliasConflicts(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App/Config', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+        file_put_contents($srcDirectory.'/App/Config/constants.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            PHP);
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use const App\Config\ENABLED;
+            use const Other\ACTIVE;
+
+            final class Consumer
+            {
+                public function enabled(): bool
+                {
+                    return ENABLED;
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+
+        $this->assertConflictBlocksApplication($renamer->renameConstantFqcn('App\\Config\\ENABLED', 'Tools\\ACTIVE'), 'return \\App\\Config\\ENABLED;');
+        $this->assertConflictReportsAndApplies($renamer->renameConstantFqcn('App\\Config\\ENABLED', 'Tools\\ACTIVE', RenameConflictPolicy::REPORT), 'return \\Tools\\ACTIVE;');
+    }
+
+    /**
      * Ensures parameter conflicts are covered by the shared conflict policy.
      */
     public function testItHandlesParameterRenameConflicts(): void
@@ -754,6 +843,23 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
             PHP);
 
         $this->assertAppliesWithoutConflict($renamer->renameClassConstant('App\\Mailer', 'DEFAULT_TRANSPORT', 'fallback_transport'), 'fallback_transport');
+    }
+
+    /**
+     * Ensures namespace-level constant conflicts remain case-sensitive.
+     */
+    public function testItKeepsConstantRenameConflictsCaseSensitive(): void
+    {
+        $renamer = $this->renamerWithFixture('ConstantCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App\Config;
+
+            const ENABLED = true;
+            const ACTIVE = false;
+            PHP);
+
+        $this->assertAppliesWithoutConflict($renamer->renameConstant('App\\Config\\ENABLED', 'active'), 'const active = true;');
     }
 
     /**
