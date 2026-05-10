@@ -164,6 +164,8 @@ Current conflict checks consume `member-graph` scope facts for:
 - function declarations in the target namespace;
 - same-signature parameters and local variables in the declaring body.
 
+Conflict comparisons follow PHP naming semantics: class-like, function, and method collisions are checked case-insensitively, while properties, class constants, enum cases, parameters, and local variables remain case-sensitive.
+
 ## Current Implementation
 
 `MemberGraphMethodRenamePlanner` currently:

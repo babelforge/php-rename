@@ -31,6 +31,7 @@ The current test suite covers:
 - conflict policy for blocking errors and report-only warnings across every supported rename family.
 - no-op rename planning across every supported rename family.
 - request validation for invalid identifiers and FQCN-like names.
+- case-sensitivity rules for rename conflict policy.
 
 ## Testing Direction
 
@@ -64,6 +65,8 @@ Priority cases:
 - conflict policy reports warnings while allowing application when configured as `REPORT`.
 - invalid rename inputs throw before planning;
 - no-op renames produce warning diagnostics and empty plans.
+- class-like, function, and method conflicts are case-insensitive;
+- property, class-constant, and parameter conflicts are case-sensitive.
 
 ## Maintenance Rules
 

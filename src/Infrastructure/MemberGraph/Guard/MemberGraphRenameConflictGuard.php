@@ -22,6 +22,9 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
+use PhpParser\Node;
+use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Param;
 
 /**
  * Converts neutral `member-graph` scope facts into rename conflict diagnostics.
@@ -49,6 +52,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The method name "%s" already exists in the resolved owner scope.', $request->newName()),
+            caseSensitive: false,
         );
     }
 
@@ -73,6 +77,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The property name "$%s" already exists in the resolved owner scope.', $request->newName()),
+            caseSensitive: true,
         );
     }
 
@@ -106,6 +111,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The class constant or enum case name "%s" already exists in the resolved owner scope.', $request->newName()),
+            caseSensitive: true,
         );
     }
 
@@ -130,6 +136,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The class-like name "%s" already exists in the target namespace.', $request->newName()),
+            caseSensitive: false,
         );
     }
 
@@ -155,6 +162,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $this->shortName($newName),
             policy: $request->conflictPolicy,
             message: sprintf('The class-like FQCN "%s" already exists.', $newName),
+            caseSensitive: false,
         );
     }
 
@@ -179,6 +187,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The function name "%s" already exists in the target namespace.', $request->newName()),
+            caseSensitive: false,
         );
     }
 
@@ -204,6 +213,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $this->shortName($newName),
             policy: $request->conflictPolicy,
             message: sprintf('The function FQCN "%s" already exists.', $newName),
+            caseSensitive: false,
         );
     }
 
@@ -233,6 +243,7 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The parameter name "$%s" already exists in the same signature.', $request->newName()),
+            caseSensitive: true,
         );
         $this->reportMatchNameConflict(
             diagnostics: $diagnostics,
@@ -241,18 +252,20 @@ final readonly class MemberGraphRenameConflictGuard
             newName: $request->newName(),
             policy: $request->conflictPolicy,
             message: sprintf('The local variable name "$%s" already exists in the declaring body.', $request->newName()),
+            caseSensitive: true,
         );
     }
 
     /**
      * Reports one fact-name conflict when present.
      *
-     * @param RenameDiagnosticCollection           $diagnostics the diagnostics to update
-     * @param MemberGraphSymbolScopeFactCollection $facts       the scope facts to inspect
-     * @param string                               $oldName     the old symbol name
-     * @param string                               $newName     the new symbol name
-     * @param RenameConflictPolicy                 $policy      the conflict policy
-     * @param string                               $message     the diagnostic message
+     * @param RenameDiagnosticCollection           $diagnostics   the diagnostics to update
+     * @param MemberGraphSymbolScopeFactCollection $facts         the scope facts to inspect
+     * @param string                               $oldName       the old symbol name
+     * @param string                               $newName       the new symbol name
+     * @param RenameConflictPolicy                 $policy        the conflict policy
+     * @param string                               $message       the diagnostic message
+     * @param bool                                 $caseSensitive whether names must be compared case-sensitively
      */
     private function reportNameConflict(
         RenameDiagnosticCollection $diagnostics,
@@ -261,8 +274,9 @@ final readonly class MemberGraphRenameConflictGuard
         string $newName,
         RenameConflictPolicy $policy,
         string $message,
+        bool $caseSensitive,
     ): void {
-        if (!$this->hasFactName($facts, $oldName, $newName)) {
+        if (!$this->hasFactName($facts, $oldName, $newName, $caseSensitive)) {
             return;
         }
 
@@ -272,12 +286,13 @@ final readonly class MemberGraphRenameConflictGuard
     /**
      * Reports one fact short-name conflict when present.
      *
-     * @param RenameDiagnosticCollection           $diagnostics the diagnostics to update
-     * @param MemberGraphSymbolScopeFactCollection $facts       the scope facts to inspect
-     * @param string                               $oldName     the old symbol name
-     * @param string                               $newName     the new symbol name
-     * @param RenameConflictPolicy                 $policy      the conflict policy
-     * @param string                               $message     the diagnostic message
+     * @param RenameDiagnosticCollection           $diagnostics   the diagnostics to update
+     * @param MemberGraphSymbolScopeFactCollection $facts         the scope facts to inspect
+     * @param string                               $oldName       the old symbol name
+     * @param string                               $newName       the new symbol name
+     * @param RenameConflictPolicy                 $policy        the conflict policy
+     * @param string                               $message       the diagnostic message
+     * @param bool                                 $caseSensitive whether names must be compared case-sensitively
      */
     private function reportShortNameConflict(
         RenameDiagnosticCollection $diagnostics,
@@ -286,8 +301,9 @@ final readonly class MemberGraphRenameConflictGuard
         string $newName,
         RenameConflictPolicy $policy,
         string $message,
+        bool $caseSensitive,
     ): void {
-        if (!$this->hasFactShortName($facts, $oldName, $newName)) {
+        if (!$this->hasFactShortName($facts, $oldName, $newName, $caseSensitive)) {
             return;
         }
 
@@ -297,12 +313,13 @@ final readonly class MemberGraphRenameConflictGuard
     /**
      * Reports one source-node match conflict when present.
      *
-     * @param RenameDiagnosticCollection              $diagnostics the diagnostics to update
-     * @param VirtualPhpSourceFileNodeMatchCollection $matches     the source-node matches to inspect
-     * @param string                                  $oldName     the old symbol name
-     * @param string                                  $newName     the new symbol name
-     * @param RenameConflictPolicy                    $policy      the conflict policy
-     * @param string                                  $message     the diagnostic message
+     * @param RenameDiagnosticCollection              $diagnostics   the diagnostics to update
+     * @param VirtualPhpSourceFileNodeMatchCollection $matches       the source-node matches to inspect
+     * @param string                                  $oldName       the old symbol name
+     * @param string                                  $newName       the new symbol name
+     * @param RenameConflictPolicy                    $policy        the conflict policy
+     * @param string                                  $message       the diagnostic message
+     * @param bool                                    $caseSensitive whether names must be compared case-sensitively
      */
     private function reportMatchNameConflict(
         RenameDiagnosticCollection $diagnostics,
@@ -311,8 +328,9 @@ final readonly class MemberGraphRenameConflictGuard
         string $newName,
         RenameConflictPolicy $policy,
         string $message,
+        bool $caseSensitive,
     ): void {
-        if ($oldName === $newName || !$matches->hasName($newName)) {
+        if ($this->sameName($oldName, $newName, $caseSensitive) || !$this->hasMatchName($matches, $newName, $caseSensitive)) {
             return;
         }
 
@@ -322,18 +340,19 @@ final readonly class MemberGraphRenameConflictGuard
     /**
      * Indicates whether facts contain the requested local name.
      *
-     * @param MemberGraphSymbolScopeFactCollection $facts   the scope facts to inspect
-     * @param string                               $oldName the old symbol name
-     * @param string                               $newName the new symbol name
+     * @param MemberGraphSymbolScopeFactCollection $facts         the scope facts to inspect
+     * @param string                               $oldName       the old symbol name
+     * @param string                               $newName       the new symbol name
+     * @param bool                                 $caseSensitive whether names must be compared case-sensitively
      */
-    private function hasFactName(MemberGraphSymbolScopeFactCollection $facts, string $oldName, string $newName): bool
+    private function hasFactName(MemberGraphSymbolScopeFactCollection $facts, string $oldName, string $newName, bool $caseSensitive): bool
     {
-        if ($oldName === $newName) {
+        if ($this->sameName($oldName, $newName, $caseSensitive)) {
             return false;
         }
 
         foreach ($facts as $fact) {
-            if ($fact->name === $newName) {
+            if ($this->sameName($fact->name, $newName, $caseSensitive)) {
                 return true;
             }
         }
@@ -344,18 +363,19 @@ final readonly class MemberGraphRenameConflictGuard
     /**
      * Indicates whether facts contain the requested short name.
      *
-     * @param MemberGraphSymbolScopeFactCollection $facts   the scope facts to inspect
-     * @param string                               $oldName the old symbol short name
-     * @param string                               $newName the new symbol short name
+     * @param MemberGraphSymbolScopeFactCollection $facts         the scope facts to inspect
+     * @param string                               $oldName       the old symbol short name
+     * @param string                               $newName       the new symbol short name
+     * @param bool                                 $caseSensitive whether names must be compared case-sensitively
      */
-    private function hasFactShortName(MemberGraphSymbolScopeFactCollection $facts, string $oldName, string $newName): bool
+    private function hasFactShortName(MemberGraphSymbolScopeFactCollection $facts, string $oldName, string $newName, bool $caseSensitive): bool
     {
-        if ($oldName === $newName) {
+        if ($this->sameName($oldName, $newName, $caseSensitive)) {
             return false;
         }
 
         foreach ($facts as $fact) {
-            if ($this->factShortName($fact) === $newName) {
+            if ($this->sameName($this->factShortName($fact), $newName, $caseSensitive)) {
                 return true;
             }
         }
@@ -371,6 +391,64 @@ final readonly class MemberGraphRenameConflictGuard
     private function factShortName(MemberGraphSymbolScopeFact $fact): string
     {
         return $fact->shortName ?? $fact->name;
+    }
+
+    /**
+     * Indicates whether source-node matches contain the requested local name.
+     *
+     * @param VirtualPhpSourceFileNodeMatchCollection $matches       the source-node matches to inspect
+     * @param string                                  $newName       the new symbol name
+     * @param bool                                    $caseSensitive whether names must be compared case-sensitively
+     */
+    private function hasMatchName(VirtualPhpSourceFileNodeMatchCollection $matches, string $newName, bool $caseSensitive): bool
+    {
+        if ($caseSensitive) {
+            return $matches->hasName($newName);
+        }
+
+        foreach ($matches as $match) {
+            $nodeName = $this->nodeName($match->node);
+
+            if (null !== $nodeName && $this->sameName($nodeName, $newName, false)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the variable-like name represented by one supported source-node match.
+     *
+     * @param Node $node the source-node match node
+     */
+    private function nodeName(Node $node): ?string
+    {
+        if ($node instanceof Param && $node->var instanceof Variable && is_string($node->var->name)) {
+            return $node->var->name;
+        }
+
+        if ($node instanceof Variable && is_string($node->name)) {
+            return $node->name;
+        }
+
+        return null;
+    }
+
+    /**
+     * Indicates whether two names are equal under the requested comparison mode.
+     *
+     * @param string $left          the left name
+     * @param string $right         the right name
+     * @param bool   $caseSensitive whether names must be compared case-sensitively
+     */
+    private function sameName(string $left, string $right, bool $caseSensitive): bool
+    {
+        if ($caseSensitive) {
+            return $left === $right;
+        }
+
+        return strtolower($left) === strtolower($right);
     }
 
     /**

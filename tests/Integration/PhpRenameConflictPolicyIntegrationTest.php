@@ -250,6 +250,141 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures method conflicts are detected case-insensitively.
+     */
+    public function testItDetectsMethodRenameConflictsCaseInsensitively(): void
+    {
+        $renamer = $this->renamerWithFixture('MethodCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                }
+
+                public function deliver(): void
+                {
+                }
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameMethod('App\\Mailer', 'send', 'DELIVER'), 'function send(');
+    }
+
+    /**
+     * Ensures class-like conflicts are detected case-insensitively.
+     */
+    public function testItDetectsClassRenameConflictsCaseInsensitively(): void
+    {
+        $renamer = $this->renamerWithFixture('ClassCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            class Mailer
+            {
+            }
+
+            class TransactionalMailer
+            {
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameClass('App\\Mailer', 'transactionalmailer'), 'class Mailer');
+    }
+
+    /**
+     * Ensures function conflicts are detected case-insensitively.
+     */
+    public function testItDetectsFunctionRenameConflictsCaseInsensitively(): void
+    {
+        $renamer = $this->renamerWithFixture('function_case.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            function send_mail(): string
+            {
+                return 'sent';
+            }
+
+            function deliver_mail(): string
+            {
+                return 'delivered';
+            }
+            PHP);
+
+        $this->assertConflictBlocksApplication($renamer->renameFunction('App\\send_mail', 'DELIVER_MAIL'), 'function send_mail(');
+    }
+
+    /**
+     * Ensures property conflicts remain case-sensitive.
+     */
+    public function testItKeepsPropertyRenameConflictsCaseSensitive(): void
+    {
+        $renamer = $this->renamerWithFixture('PropertyCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public string $transport = 'smtp';
+
+                public string $mailerTransport = 'api';
+            }
+            PHP);
+
+        $this->assertAppliesWithoutConflict($renamer->renameProperty('App\\Mailer', 'transport', 'MAILERTRANSPORT'), 'public string $MAILERTRANSPORT');
+    }
+
+    /**
+     * Ensures class-constant conflicts remain case-sensitive.
+     */
+    public function testItKeepsClassConstantRenameConflictsCaseSensitive(): void
+    {
+        $renamer = $this->renamerWithFixture('ConstantCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public const DEFAULT_TRANSPORT = 'smtp';
+
+                public const FALLBACK_TRANSPORT = 'api';
+            }
+            PHP);
+
+        $this->assertAppliesWithoutConflict($renamer->renameClassConstant('App\\Mailer', 'DEFAULT_TRANSPORT', 'fallback_transport'), 'fallback_transport');
+    }
+
+    /**
+     * Ensures parameter conflicts remain case-sensitive.
+     */
+    public function testItKeepsParameterRenameConflictsCaseSensitive(): void
+    {
+        $renamer = $this->renamerWithFixture('ParameterCaseFixture.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(string $message): void
+                {
+                    $existing = $message;
+                }
+            }
+            PHP);
+
+        $this->assertAppliesWithoutConflict($renamer->renameMethodParameter('App\\Mailer', 'send', 'message', 'Existing', 0), '$existing = $Existing;');
+    }
+
+    /**
      * Creates a renamer from one source fixture.
      *
      * @param string $fileName the source file name
@@ -288,6 +423,19 @@ final class PhpRenameConflictPolicyIntegrationTest extends TestCase
     private function assertConflictReportsAndApplies(RenameResult $result, string $expectedAppliedCode): void
     {
         self::assertSame(RenameDiagnosticSeverity::WARNING, $this->firstPlanDiagnosticSeverity($result->plan->diagnostics));
+        self::assertGreaterThan(0, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString($expectedAppliedCode, $this->printedCode($result->virtualFiles));
+    }
+
+    /**
+     * Asserts that a rename applies without conflict diagnostics.
+     *
+     * @param RenameResult $result              the rename result
+     * @param string       $expectedAppliedCode the applied code fragment
+     */
+    private function assertAppliesWithoutConflict(RenameResult $result, string $expectedAppliedCode): void
+    {
+        self::assertCount(0, $result->plan->diagnostics);
         self::assertGreaterThan(0, $this->updatedVirtualFileCount($result->virtualFiles));
         self::assertStringContainsString($expectedAppliedCode, $this->printedCode($result->virtualFiles));
     }
