@@ -156,6 +156,28 @@ final readonly class PhpRename
     }
 
     /**
+     * Starts a rename transaction from the current member graph build.
+     */
+    public function beginTransaction(): PhpRenameTransaction
+    {
+        return new PhpRenameTransaction(
+            currentBuild: $this->build,
+            methodRenamePlanner: $this->methodRenamePlanner,
+            propertyRenamePlanner: $this->propertyRenamePlanner,
+            classConstantRenamePlanner: $this->classConstantRenamePlanner,
+            enumCaseRenamePlanner: $this->enumCaseRenamePlanner,
+            classRenamePlanner: $this->classRenamePlanner,
+            classFqcnRenamePlanner: $this->classFqcnRenamePlanner,
+            functionRenamePlanner: $this->functionRenamePlanner,
+            functionFqcnRenamePlanner: $this->functionFqcnRenamePlanner,
+            constantRenamePlanner: $this->constantRenamePlanner,
+            constantFqcnRenamePlanner: $this->constantFqcnRenamePlanner,
+            parameterRenamePlanner: $this->parameterRenamePlanner,
+            renamePlanApplier: $this->renamePlanApplier,
+        );
+    }
+
+    /**
      * Plans a semantic method rename.
      *
      * @param string               $className      the class name that anchors the method rename

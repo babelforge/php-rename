@@ -66,6 +66,27 @@ $renamer = PhpRename::fromBuild($build);
 
 This is the preferred integration point for future orchestration packages such as `php-refactor`.
 
+## Use A Rename Transaction
+
+Use a transaction when later rename actions depend on earlier in-memory AST mutations:
+
+```php
+$transaction = $renamer->beginTransaction();
+
+$transaction->renameClassFqcn('App\\Mailer', 'App\\Infrastructure\\Sender');
+$transaction->renameMethod('App\\Infrastructure\\Sender', 'send', 'deliver');
+
+$result = $transaction->commit();
+```
+
+After each successful action, the transaction rebuilds an in-memory `member-graph` build from the mutated virtual files. No physical files are written, and the persistent graph cache is not refreshed.
+
+If a rename action produces a blocking diagnostic, the transaction enters a failed state and no later action can be executed. Call `rollback()` to restore virtual files touched by earlier successful actions:
+
+```php
+$rollbackResult = $transaction->rollback();
+```
+
 ## Plan A Method Rename
 
 Planning should produce operations and diagnostics without mutating virtual files:

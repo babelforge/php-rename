@@ -40,6 +40,8 @@ The current test suite covers:
 - explicit enum-case rename API coverage.
 - magic method semantic warning diagnostics.
 - expanded structured docblock references.
+- transaction rebuild behavior for dependent rename actions.
+- transaction rollback after a later blocking diagnostic.
 
 ## Testing Direction
 
@@ -87,6 +89,8 @@ Priority cases:
 - class-like, function, and method conflicts are case-insensitive;
 - property, class-constant, enum-case, namespace-level constant, and parameter conflicts are case-sensitive.
 - FQCN renames report normal, grouped, and explicit-alias import conflicts, then fall back to fully-qualified usages when application is allowed.
+- transactions rebuild an in-memory graph after each successful action.
+- transactions restore touched virtual files on rollback.
 
 ## Maintenance Rules
 

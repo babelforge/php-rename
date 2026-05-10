@@ -16,6 +16,8 @@ The architecture is intentionally small at this stage.
 - `RenameConflictPolicy`: defines whether detected conflicts become warnings or blocking errors.
 - `RenameSymbolKind`: identifies the kind of symbol being renamed.
 - `RenameOperationRole`: identifies why a node is part of the plan.
+- `RenameTransactionStatus`: identifies transaction lifecycle state.
+- `RenameTransactionResult`: aggregates transaction action results, final build, final virtual files, and diagnostics.
 
 Domain objects should stay independent from orchestration logic.
 
@@ -27,6 +29,7 @@ It exposes:
 
 - `fromDirectory()`;
 - `fromBuild()`;
+- `beginTransaction()`;
 - `planClassRename()`;
 - `renameClass()`;
 - `planClassFqcnRename()`;
@@ -52,6 +55,8 @@ It exposes:
 - `planFunctionParameterRename()`;
 - `renameFunctionParameter()`.
 
+`Application/PhpRenameTransaction` mirrors the direct rename methods and rebuilds an in-memory `member-graph` build after each successful action through `MemberDependencyGraphFactory::fromVirtualFiles(...)`.
+
 `Application/Contract` contains the service contracts used by the facade:
 
 - `MethodRenamePlannerInterface`;
@@ -72,6 +77,8 @@ It exposes:
 `Infrastructure/MemberGraph` translates semantic graph facts into rename operations. It also converts neutral `member-graph` scope facts into `php-rename` diagnostics according to the request conflict policy.
 
 `Infrastructure/PhpParser` applies rename operations to PHPParser AST nodes stored in virtual files.
+
+`Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
 
 Infrastructure code can depend on external packages. Domain objects should remain simple and explicit.
 
