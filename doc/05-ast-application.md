@@ -4,7 +4,7 @@ Navigation: [Documentation](README.md) | [Previous: Rename Planning](04-rename-p
 
 AST application mutates virtual PHP files in memory from a `RenamePlan`.
 
-It should not write physical files in the first milestones.
+It does not write physical files directly. Transaction save helpers delegate physical writing to `php-source-registry`.
 
 The applier must not discover rename targets. It only mutates nodes already present in the rename plan.
 

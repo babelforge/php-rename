@@ -29,7 +29,7 @@ Its responsibility is to rename PHP symbols safely by combining:
 - AST rename operations;
 - applying operations to loaded virtual files.
 
-Physical file writing and source reassembly are not part of the first milestone.
+Physical file writing is delegated to `php-source-registry` through the source registry exposed by `member-graph`.
 
 ## Current Status
 
@@ -42,9 +42,10 @@ The current implementation provides:
 - contracts for planning and applying rename plans;
 - `member-graph` planners that convert source-node matches into rename operations;
 - PHPParser appliers that mutate matched AST nodes in virtual files;
-- conflict policy with blocking and report-only modes.
+- conflict policy with blocking and report-only modes;
+- transaction helpers for in-memory commits, rollback, and optional source-registry writing.
 
-The current implementation does not write physical files, move file paths, rename whole namespaces, or rebuild `member-graph` caches after mutation.
+The current implementation does not move file paths, rename whole namespaces, or rebuild `member-graph` caches after mutation.
 
 ## Boundary Decisions
 
@@ -54,6 +55,6 @@ FQCN symbol renames can update the namespace node of a matched declaration, but 
 
 ## Direction
 
-The next larger concern is transaction/cache behavior: batching multiple rename operations, refreshing semantic facts after mutation, and rolling back virtual-file mutations when a batch fails.
+`php-rename` is now focused on safe symbol rename operations. Broader orchestration such as namespace-wide refactors, file moves, and multi-step clone/extract workflows belongs in a higher-level package such as `php-refactor`.
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)
