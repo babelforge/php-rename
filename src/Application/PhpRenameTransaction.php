@@ -6,6 +6,8 @@ namespace PhpNoobs\PhpRename\Application;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
+use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphProjectedBuildFactory;
 use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
@@ -25,6 +27,18 @@ use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Request\RenameRequestInterface;
 use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
 use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Transaction\VirtualPhpSourceFileSnapshot;
@@ -46,6 +60,8 @@ final class PhpRenameTransaction
 
     private RenameTransactionStatus $status = RenameTransactionStatus::ACTIVE;
     private RenameDiagnosticCollection $diagnostics;
+    private MemberDependencyGraphBuild $baseBuild;
+    private MemberGraphBuildOverlay $overlay;
 
     /**
      * Constructor.
@@ -80,6 +96,8 @@ final class PhpRenameTransaction
         private readonly RenamePlanApplierInterface $renamePlanApplier,
     ) {
         $this->diagnostics = RenameDiagnosticCollection::empty();
+        $this->baseBuild = $currentBuild;
+        $this->overlay = MemberGraphBuildOverlay::empty();
     }
 
     /**
@@ -331,7 +349,9 @@ final class PhpRenameTransaction
             $snapshot->restore($virtualFile);
         }
 
-        $this->currentBuild = MemberDependencyGraphFactory::fromVirtualFiles($this->currentBuild->virtualFiles);
+        $this->overlay = MemberGraphBuildOverlay::empty();
+        $this->currentBuild = MemberDependencyGraphFactory::fromVirtualFiles($this->baseBuild->virtualFiles);
+        $this->baseBuild = $this->currentBuild;
         $this->status = RenameTransactionStatus::ROLLED_BACK;
 
         return $this->result($this->status);
@@ -377,9 +397,143 @@ final class PhpRenameTransaction
             return $result;
         }
 
-        $this->currentBuild = MemberDependencyGraphFactory::fromVirtualFiles($result->virtualFiles);
+        $this->refreshCurrentBuild($plan);
 
         return $result;
+    }
+
+    /**
+     * Refreshes the current transaction build after one successful action.
+     *
+     * @param RenamePlan $plan the successfully applied plan
+     */
+    private function refreshCurrentBuild(RenamePlan $plan): void
+    {
+        if (0 === count($plan->operations)) {
+            return;
+        }
+
+        if (!$this->recordOverlayUpdate($plan->request)) {
+            $this->currentBuild = MemberDependencyGraphFactory::fromVirtualFiles($this->currentBuild->virtualFiles);
+            $this->baseBuild = $this->currentBuild;
+            $this->overlay = MemberGraphBuildOverlay::empty();
+
+            return;
+        }
+
+        $this->currentBuild = MemberGraphProjectedBuildFactory::fromBuild(
+            build: $this->baseBuild,
+            overlay: $this->overlay,
+        );
+    }
+
+    /**
+     * Records one supported semantic identity update in the transaction overlay.
+     *
+     * @param RenameRequestInterface $request the applied rename request
+     */
+    private function recordOverlayUpdate(RenameRequestInterface $request): bool
+    {
+        if ($request instanceof ClassFqcnRenameRequest) {
+            $this->overlay = $this->overlay->withOwnerUpdate($request->oldName(), $request->newName());
+
+            return true;
+        }
+
+        if ($request instanceof ClassRenameRequest) {
+            $this->overlay = $this->overlay->withOwnerUpdate(
+                owner: $request->className,
+                newOwner: $this->namespacedName($request->className, $request->newClassName),
+            );
+
+            return true;
+        }
+
+        if ($request instanceof MethodRenameRequest) {
+            $this->overlay = $this->overlay->withMethodUpdate($request->className, $request->methodName, $request->newMethodName);
+
+            return true;
+        }
+
+        if ($request instanceof PropertyRenameRequest) {
+            $this->overlay = $this->overlay->withPropertyUpdate($request->className, $request->propertyName, $request->newPropertyName);
+
+            return true;
+        }
+
+        if ($request instanceof ClassConstantRenameRequest) {
+            $this->overlay = $this->overlay->withClassConstantUpdate($request->className, $request->constantName, $request->newConstantName);
+
+            return true;
+        }
+
+        if ($request instanceof EnumCaseRenameRequest) {
+            $this->overlay = $this->overlay->withEnumCaseUpdate($request->enumName, $request->caseName, $request->newCaseName);
+
+            return true;
+        }
+
+        if ($request instanceof FunctionFqcnRenameRequest) {
+            $this->overlay = $this->overlay->withFunctionUpdate($request->oldName(), $request->newName());
+
+            return true;
+        }
+
+        if ($request instanceof FunctionRenameRequest) {
+            $this->overlay = $this->overlay->withFunctionUpdate(
+                name: $request->functionName,
+                newName: $this->namespacedName($request->functionName, $request->newFunctionName),
+            );
+
+            return true;
+        }
+
+        if ($request instanceof ConstantFqcnRenameRequest) {
+            $this->overlay = $this->overlay->withNamespaceConstantUpdate($request->oldName(), $request->newName());
+
+            return true;
+        }
+
+        if ($request instanceof ConstantRenameRequest) {
+            $this->overlay = $this->overlay->withNamespaceConstantUpdate(
+                name: $request->constantName,
+                newName: $this->namespacedName($request->constantName, $request->newConstantName),
+            );
+
+            return true;
+        }
+
+        if ($request instanceof ParameterRenameRequest) {
+            $this->overlay = $this->overlay->withParameterUpdate(
+                owner: $request->owner,
+                functionLikeName: $request->functionLikeName,
+                parameterName: $request->parameterName,
+                newParameterName: $request->newParameterName,
+                parameterIndex: $request->parameterIndex,
+            );
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Replaces the short name part of one fully-qualified symbol name.
+     *
+     * @param string $currentName  the current fully-qualified symbol name
+     * @param string $newShortName the replacement short name
+     */
+    private function namespacedName(string $currentName, string $newShortName): string
+    {
+        $parts = explode('\\', ltrim($currentName, '\\'));
+        array_pop($parts);
+
+        if ([] === $parts) {
+            return $newShortName;
+        }
+
+        return implode('\\', $parts).'\\'.$newShortName;
     }
 
     /**

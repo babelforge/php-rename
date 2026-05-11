@@ -79,7 +79,7 @@ $transaction->renameMethod('App\\Infrastructure\\Sender', 'send', 'deliver');
 $result = $transaction->commit();
 ```
 
-After each successful action, the transaction rebuilds an in-memory `member-graph` build from the mutated virtual files. No physical files are written, and the persistent graph cache is not refreshed.
+After each successful action, the transaction records a `member-graph` overlay update and receives a projected in-memory build. If an action cannot be represented by the overlay, the transaction falls back to a cache-free rebuild from mutated virtual files. No physical files are written, and the persistent graph cache is not refreshed.
 
 If a rename action produces a blocking diagnostic, the transaction enters a failed state and no later action can be executed. Call `rollback()` to restore virtual files touched by earlier successful actions:
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Tests\Integration;
 
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\PhpRename\Application\PhpRename;
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
@@ -71,6 +72,7 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
         self::assertStringContainsString('public function deliver(): void', $printedCode);
         self::assertStringNotContainsString('final class Mailer', $printedCode);
         self::assertStringNotContainsString('public function send(): void', $printedCode);
+        self::assertGreaterThan(0, count(MemberGraphSourceNodeLocator::fromBuild($result->finalBuild)->method('App\\Infrastructure\\Sender', 'deliver')));
     }
 
     /**
