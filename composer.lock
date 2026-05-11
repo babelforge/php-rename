@@ -138,12 +138,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/php-source-registry.git",
-                "reference": "226df43e1ad1a74dabf0e9e91c937a0fa0cf29de"
+                "reference": "7012a7189374b14039970fb935718c3c0f840739"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/226df43e1ad1a74dabf0e9e91c937a0fa0cf29de",
-                "reference": "226df43e1ad1a74dabf0e9e91c937a0fa0cf29de",
+                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/7012a7189374b14039970fb935718c3c0f840739",
+                "reference": "7012a7189374b14039970fb935718c3c0f840739",
                 "shasum": ""
             },
             "require": {
@@ -194,7 +194,7 @@
                 "source": "https://github.com/php-noobs/php-source-registry/tree/main",
                 "issues": "https://github.com/php-noobs/php-source-registry/issues"
             },
-            "time": "2026-05-11T11:50:51+00:00"
+            "time": "2026-05-11T12:15:44+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

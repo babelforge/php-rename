@@ -262,13 +262,7 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
      */
     private function sourceFilePath(string $fileName): string
     {
-        $filePath = realpath($this->workspace.'/src/'.$fileName);
-
-        if (false === $filePath) {
-            throw new \RuntimeException("Source file $fileName not found");
-        }
-
-        return $filePath;
+        return $this->workspace.'/src/../src/'.$fileName;
     }
 
     /**
