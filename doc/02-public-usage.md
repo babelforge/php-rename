@@ -239,7 +239,7 @@ $result = $renamer->renameFunction(
 );
 ```
 
-The first function rename slice does not move functions between namespaces and does not rewrite `use function` imports.
+Function short rename does not move functions between namespaces. Existing `use function` imports for the renamed function are rewritten to the renamed FQCN.
 
 ## Plan And Apply Parameter Renames
 

@@ -182,15 +182,17 @@ For function FQCN rename, structured docblock references can also rename fully-q
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
-## Future Physical Writing
+## Physical Writing
 
-Physical writing should be a separate layer.
+Physical writing is delegated to the source registry exposed by the final `member-graph` build.
 
-That later layer can decide how to:
+`commit()` remains in-memory only. Transactions can also use:
 
-- pretty-print virtual files;
-- preserve formatting;
-- update physical files;
-- expose diffs or write changes to disk.
+```php
+$transaction->commitAndSave();
+$transaction->commitAndSaveSourceFile('/project/src/App/Mailer.php');
+```
+
+`php-rename` does not implement low-level source writing. That responsibility belongs to `php-source-registry`.
 
 Navigation: [Documentation](README.md) | [Previous: Rename Planning](04-rename-planning.md) | [Next: Testing And Maintenance](06-testing-and-maintenance.md)

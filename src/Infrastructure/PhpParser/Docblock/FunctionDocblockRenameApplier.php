@@ -69,7 +69,11 @@ final readonly class FunctionDocblockRenameApplier implements RenameMetadataAppl
      */
     private function renameSupportedFunctionReferences(string $text, string $oldName, string $newName): string
     {
-        $updatedText = $this->renameSupportedFunctionName($text, ltrim($oldName, '\\'), ltrim($newName, '\\'));
+        $updatedText = $this->renameSupportedFunctionName(
+            text: $text,
+            oldName: ltrim($oldName, '\\'),
+            newName: $this->fullyQualifiedReplacementName($oldName, $newName),
+        );
 
         if (!str_contains($oldName, '\\')) {
             return $updatedText;
@@ -98,6 +102,40 @@ final readonly class FunctionDocblockRenameApplier implements RenameMetadataAppl
             replacement: '$1'.ltrim($newName, '\\'),
             subject: $text,
         ) ?? $text;
+    }
+
+    /**
+     * Returns the fully-qualified replacement name for one function rename.
+     *
+     * @param string $oldName the current function name
+     * @param string $newName the replacement function name
+     */
+    private function fullyQualifiedReplacementName(string $oldName, string $newName): string
+    {
+        if (str_contains($newName, '\\')) {
+            return ltrim($newName, '\\');
+        }
+
+        $namespace = $this->namespaceName($oldName);
+
+        if ('' === $namespace) {
+            return $newName;
+        }
+
+        return $namespace.'\\'.$newName;
+    }
+
+    /**
+     * Returns the namespace part of one fully-qualified function name.
+     *
+     * @param string $name the fully-qualified function name
+     */
+    private function namespaceName(string $name): string
+    {
+        $parts = explode('\\', ltrim($name, '\\'));
+        array_pop($parts);
+
+        return implode('\\', $parts);
     }
 
     /**

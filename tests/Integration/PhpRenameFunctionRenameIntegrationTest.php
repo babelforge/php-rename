@@ -43,6 +43,7 @@ final class PhpRenameFunctionRenameIntegrationTest extends TestCase
         mkdir($srcDirectory, 0o777, true);
         $this->writeFunctionsFile($srcDirectory.'/functions.php');
         $this->writeRunnerFile($srcDirectory.'/Runner.php');
+        $this->writeImportedRunnerFile($srcDirectory.'/ImportedRunner.php');
 
         $renamer = PhpRename::fromDirectory(
             directories: [$srcDirectory],
@@ -52,15 +53,17 @@ final class PhpRenameFunctionRenameIntegrationTest extends TestCase
         $result = $renamer->renameFunction('App\\send_mail', 'deliver_mail');
         $printedCode = $this->printedCode($result->virtualFiles);
 
-        self::assertCount(2, $result->plan->operations);
+        self::assertCount(3, $result->plan->operations);
         self::assertCount(0, $result->diagnostics);
-        self::assertSame(2, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertSame(3, $this->updatedVirtualFileCount($result->virtualFiles));
         self::assertStringContainsString('function deliver_mail(', $printedCode);
         self::assertStringContainsString('deliver_mail()', $printedCode);
+        self::assertStringContainsString('use function App\\deliver_mail;', $printedCode);
         self::assertStringContainsString('@see deliver_mail()', $printedCode);
         self::assertStringContainsString('@see App\\deliver_mail() detailed reference', $printedCode);
         self::assertStringContainsString('Mentions send_mail in prose without changing free text.', $printedCode);
         self::assertStringNotContainsString('function send_mail(', $printedCode);
+        self::assertStringNotContainsString('use function App\\send_mail;', $printedCode);
         self::assertStringNotContainsString('@see send_mail()', $printedCode);
         self::assertStringNotContainsString('@see App\\send_mail()', $printedCode);
     }
@@ -103,6 +106,30 @@ final class PhpRenameFunctionRenameIntegrationTest extends TestCase
             namespace App;
 
             final class Runner
+            {
+                public function run(): string
+                {
+                    return send_mail();
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the imported runner fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeImportedRunnerFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use function App\send_mail;
+
+            final class ImportedRunner
             {
                 public function run(): string
                 {

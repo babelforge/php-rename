@@ -35,6 +35,7 @@ The current test suite covers:
 - request validation for invalid identifiers and FQCN-like names.
 - case-sensitivity rules for rename conflict policy.
 - class-like and function import alias conflicts for FQCN renames, including normal imports, grouped imports, and explicit aliases.
+- short function rename import rewrites for existing `use function` imports.
 - promoted property renames, including constructor-local parameter usages and conflicts with normal or promoted properties.
 - trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
 - explicit enum-case rename API coverage.

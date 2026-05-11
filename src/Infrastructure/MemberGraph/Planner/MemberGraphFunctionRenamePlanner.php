@@ -61,7 +61,7 @@ final readonly class MemberGraphFunctionRenamePlanner implements FunctionRenameP
                 role: $operationRole,
                 file: $match->virtualFile,
                 node: $match->node,
-                oldName: $request->oldName(),
+                oldName: $request->functionName,
                 newName: $request->newFunctionName,
             ));
         }

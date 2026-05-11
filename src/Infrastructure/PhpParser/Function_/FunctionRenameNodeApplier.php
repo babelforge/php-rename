@@ -57,13 +57,12 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
         }
 
         if ($node instanceof FuncCall && $node->name instanceof Name) {
-            if ($this->isFqcnRename($operation->newName)) {
-                return $this->replaceCallWithImportedName($node, $operation, $context);
-            }
-
-            $node->name = $this->replacementName($node->name, $operation->newName);
-
-            return true;
+            return $this->replaceCallWithImportedName(
+                call: $node,
+                operation: $operation,
+                replacementName: $this->resolvedReplacementName($operation),
+                context: $context,
+            );
         }
 
         $context->diagnostics->add(new RenameDiagnostic(
@@ -72,6 +71,22 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
         ));
 
         return false;
+    }
+
+    /**
+     * Returns the fully-qualified replacement name represented by one operation.
+     *
+     * @param RenameOperation $operation the rename operation
+     */
+    private function resolvedReplacementName(RenameOperation $operation): string
+    {
+        if ($this->isFqcnRename($operation->newName)) {
+            return ltrim($operation->newName, '\\');
+        }
+
+        $namespaceName = $this->namespaceName($operation->oldName);
+
+        return '' === $namespaceName ? $operation->newName : $namespaceName.'\\'.$operation->newName;
     }
 
     /**
@@ -156,20 +171,22 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
     /**
      * Replaces one matched function call with a short imported function name.
      *
-     * @param FuncCall                 $call      the matched function call node
-     * @param RenameOperation          $operation the rename operation
-     * @param RenameApplicationContext $context   the rename application context
+     * @param FuncCall                 $call            the matched function call node
+     * @param RenameOperation          $operation       the rename operation
+     * @param string                   $replacementName the fully-qualified replacement function name
+     * @param RenameApplicationContext $context         the rename application context
      */
     private function replaceCallWithImportedName(
         FuncCall $call,
         RenameOperation $operation,
+        string $replacementName,
         RenameApplicationContext $context,
     ): bool {
         $namespace = $this->namespaceParent($call);
         $importAlias = null === $namespace ? null : $this->updateOrAddFunctionUseImport(
             namespace: $namespace,
             oldName: $operation->oldName,
-            newName: $operation->newName,
+            newName: $replacementName,
         );
 
         if (null !== $importAlias) {
@@ -178,7 +195,7 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
             return true;
         }
 
-        $call->name = new FullyQualified(ltrim($operation->newName, '\\'), $call->name instanceof Name ? $call->name->getAttributes() : []);
+        $call->name = new FullyQualified(ltrim($replacementName, '\\'), $call->name instanceof Name ? $call->name->getAttributes() : []);
 
         $context->diagnostics->add(new RenameDiagnostic(
             severity: RenameDiagnosticSeverity::WARNING,
@@ -323,19 +340,5 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
         }
 
         return null;
-    }
-
-    /**
-     * Creates a replacement name while preserving the original name shape and attributes.
-     *
-     * @param Name   $name    the original name
-     * @param string $newName the replacement short name
-     */
-    private function replacementName(Name $name, string $newName): Name
-    {
-        $parts = $name->getParts();
-        $parts[array_key_last($parts)] = $newName;
-
-        return new Name($parts, $name->getAttributes());
     }
 }
