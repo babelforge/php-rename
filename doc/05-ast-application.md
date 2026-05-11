@@ -161,6 +161,15 @@ old_function()
 
 These references are renamed only on matched function declaration docblocks, with structured `@see` support for fully-qualified function names.
 
+Current supported namespace-level constant docblock references:
+
+```php
+@see OLD_NAME
+@see App\Config\OLD_NAME
+```
+
+These references are renamed only on matched namespace-level constant declaration docblocks through the parent `Stmt\Const_` node.
+
 Current supported parameter docblock references:
 
 ```php

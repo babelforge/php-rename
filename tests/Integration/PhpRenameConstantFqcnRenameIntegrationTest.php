@@ -60,9 +60,13 @@ final class PhpRenameConstantFqcnRenameIntegrationTest extends TestCase
         self::assertSame(3, $this->updatedVirtualFileCount($result->virtualFiles));
         self::assertStringContainsString('namespace Tools;', $printedCode);
         self::assertStringContainsString('const ACTIVE = true;', $printedCode);
+        self::assertStringContainsString('@see ACTIVE', $printedCode);
+        self::assertStringContainsString('@see Tools\\ACTIVE', $printedCode);
         self::assertStringContainsString('use const Tools\\ACTIVE;', $printedCode);
         self::assertStringContainsString('return ACTIVE;', $printedCode);
         self::assertStringNotContainsString('const ENABLED = true;', $printedCode);
+        self::assertStringNotContainsString('@see ENABLED', $printedCode);
+        self::assertStringNotContainsString('@see App\\Config\\ENABLED', $printedCode);
         self::assertStringNotContainsString('use const App\\Config\\ENABLED;', $printedCode);
     }
 
@@ -78,6 +82,10 @@ final class PhpRenameConstantFqcnRenameIntegrationTest extends TestCase
 
             namespace App\Config;
 
+            /**
+             * @see ENABLED
+             * @see App\Config\ENABLED
+             */
             const ENABLED = true;
             PHP);
     }

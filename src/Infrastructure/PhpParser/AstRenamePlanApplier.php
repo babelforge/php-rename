@@ -20,6 +20,7 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\ClassConstant\ClassConstantRenam
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Constant\ConstantRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassConstantDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassDocblockRenameApplier;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ConstantDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\FunctionDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\MethodDocblockRenameApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ParameterDocblockRenameApplier;
@@ -69,6 +70,7 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
             new MethodDocblockRenameApplier(),
             new PropertyDocblockRenameApplier(),
             new ClassConstantDocblockRenameApplier(),
+            new ConstantDocblockRenameApplier(),
             new FunctionDocblockRenameApplier(),
             new ParameterDocblockRenameApplier(),
         ];

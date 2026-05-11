@@ -59,9 +59,13 @@ final class PhpRenameConstantRenameIntegrationTest extends TestCase
         self::assertCount(0, $result->diagnostics);
         self::assertSame(3, $this->updatedVirtualFileCount($result->virtualFiles));
         self::assertStringContainsString('const ACTIVE = true;', $printedCode);
+        self::assertStringContainsString('@see ACTIVE', $printedCode);
+        self::assertStringContainsString('@see App\\Config\\ACTIVE', $printedCode);
         self::assertStringContainsString('use const App\\Config\\ACTIVE;', $printedCode);
         self::assertStringContainsString('return ACTIVE;', $printedCode);
         self::assertStringNotContainsString('const ENABLED = true;', $printedCode);
+        self::assertStringNotContainsString('@see ENABLED', $printedCode);
+        self::assertStringNotContainsString('@see App\\Config\\ENABLED', $printedCode);
         self::assertStringNotContainsString('use const App\\Config\\ENABLED;', $printedCode);
     }
 
@@ -77,6 +81,10 @@ final class PhpRenameConstantRenameIntegrationTest extends TestCase
 
             namespace App\Config;
 
+            /**
+             * @see ENABLED
+             * @see App\Config\ENABLED
+             */
             const ENABLED = true;
             PHP);
     }

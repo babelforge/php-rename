@@ -39,7 +39,7 @@ The current test suite covers:
 - trait adaptation method renames, including alias sources, precedence references, and projected consumer calls.
 - explicit enum-case rename API coverage.
 - magic method semantic warning diagnostics.
-- expanded structured docblock references.
+- expanded structured docblock references, including namespace-level constant `@see` references.
 - transaction rebuild behavior for dependent rename actions.
 - transaction rollback after a later blocking diagnostic.
 
