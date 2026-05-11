@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/member-graph.git",
-                "reference": "75bb47208a52eec65a194a9897f09e63cd2f4c70"
+                "reference": "51b8cd2ed1fed2e9ab1410ce6e615a895cc5631c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/75bb47208a52eec65a194a9897f09e63cd2f4c70",
-                "reference": "75bb47208a52eec65a194a9897f09e63cd2f4c70",
+                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/51b8cd2ed1fed2e9ab1410ce6e615a895cc5631c",
+                "reference": "51b8cd2ed1fed2e9ab1410ce6e615a895cc5631c",
                 "shasum": ""
             },
             "require": {
@@ -106,10 +106,10 @@
             },
             "scripts": {
                 "cs": [
-                    "php-cs-fixer fix --dry-run --diff --sequential"
+                    "php-cs-fixer fix --dry-run --diff"
                 ],
                 "cs-fix": [
-                    "php-cs-fixer fix --sequential"
+                    "php-cs-fixer fix"
                 ],
                 "test": [
                     "phpunit"
@@ -130,7 +130,7 @@
                 "source": "https://github.com/php-noobs/member-graph/tree/main",
                 "issues": "https://github.com/php-noobs/member-graph/issues"
             },
-            "time": "2026-05-11T08:21:21+00:00"
+            "time": "2026-05-11T12:02:22+00:00"
         },
         {
             "name": "php-noobs/php-source-registry",
@@ -138,12 +138,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/php-source-registry.git",
-                "reference": "e0f64d2a69b708b2037abbee21333e1efa2bcd26"
+                "reference": "226df43e1ad1a74dabf0e9e91c937a0fa0cf29de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/e0f64d2a69b708b2037abbee21333e1efa2bcd26",
-                "reference": "e0f64d2a69b708b2037abbee21333e1efa2bcd26",
+                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/226df43e1ad1a74dabf0e9e91c937a0fa0cf29de",
+                "reference": "226df43e1ad1a74dabf0e9e91c937a0fa0cf29de",
                 "shasum": ""
             },
             "require": {
@@ -152,6 +152,8 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
                 "phpunit/phpunit": "^12.0"
             },
             "default-branch": true,
@@ -166,6 +168,25 @@
                     "PhpNoobs\\PhpSource\\Tests\\": "tests/"
                 }
             },
+            "scripts": {
+                "cs": [
+                    "php-cs-fixer fix --dry-run --diff"
+                ],
+                "cs-fix": [
+                    "php-cs-fixer fix"
+                ],
+                "test": [
+                    "phpunit"
+                ],
+                "analyse": [
+                    "phpstan analyse"
+                ],
+                "qa": [
+                    "@cs",
+                    "@analyse",
+                    "@test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -173,7 +194,7 @@
                 "source": "https://github.com/php-noobs/php-source-registry/tree/main",
                 "issues": "https://github.com/php-noobs/php-source-registry/issues"
             },
-            "time": "2026-05-07T15:51:07+00:00"
+            "time": "2026-05-11T11:50:51+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",

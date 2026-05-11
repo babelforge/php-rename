@@ -335,6 +335,40 @@ final class PhpRenameTransaction
     }
 
     /**
+     * Commits the transaction and writes every updated source file.
+     *
+     * @throws \RuntimeException when source writing fails
+     */
+    public function commitAndSave(): RenameTransactionResult
+    {
+        $result = $this->commit();
+
+        if (RenameTransactionStatus::COMMITTED === $result->status) {
+            $result->finalBuild->sourceRegistry()->save();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Commits the transaction and writes one updated physical source file.
+     *
+     * @param string $filePath the physical source file path to save
+     *
+     * @throws \RuntimeException when the source file is unknown or source writing fails
+     */
+    public function commitAndSaveSourceFile(string $filePath): RenameTransactionResult
+    {
+        $result = $this->commit();
+
+        if (RenameTransactionStatus::COMMITTED === $result->status) {
+            $result->finalBuild->sourceRegistry()->saveSourceFile($filePath);
+        }
+
+        return $result;
+    }
+
+    /**
      * Rolls back all virtual files touched by successful transaction actions.
      */
     public function rollback(): RenameTransactionResult

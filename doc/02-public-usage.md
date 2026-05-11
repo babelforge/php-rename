@@ -79,7 +79,19 @@ $transaction->renameMethod('App\\Infrastructure\\Sender', 'send', 'deliver');
 $result = $transaction->commit();
 ```
 
-After each successful action, the transaction records a `member-graph` overlay update and receives a projected in-memory build. If an action cannot be represented by the overlay, the transaction falls back to a cache-free rebuild from mutated virtual files. No physical files are written, and the persistent graph cache is not refreshed.
+After each successful action, the transaction records a `member-graph` overlay update and receives a projected in-memory build. If an action cannot be represented by the overlay, the transaction falls back to a cache-free rebuild from mutated virtual files. `commit()` keeps the result in memory and does not refresh the persistent graph cache.
+
+To commit and write every updated physical source file through the source registry used by `member-graph`:
+
+```php
+$result = $transaction->commitAndSave();
+```
+
+To commit and write one updated physical source file:
+
+```php
+$result = $transaction->commitAndSaveSourceFile('/project/src/App/Mailer.php');
+```
 
 If a rename action produces a blocking diagnostic, the transaction enters a failed state and no later action can be executed. Call `rollback()` to restore virtual files touched by earlier successful actions:
 

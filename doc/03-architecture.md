@@ -57,6 +57,8 @@ It exposes:
 
 `Application/PhpRenameTransaction` mirrors the direct rename methods and maintains a cumulative `member-graph` overlay during the transaction. After each successful supported action, it asks `member-graph` for a projected build. Unsupported actions can still fall back to `MemberDependencyGraphFactory::fromVirtualFiles(...)`.
 
+`commit()` finalizes the in-memory transaction. `commitAndSave()` and `commitAndSaveSourceFile()` finalize the transaction and delegate physical writing to the `sourceRegistry()` exposed by the final `member-graph` build.
+
 `Application/Contract` contains the service contracts used by the facade:
 
 - `MethodRenamePlannerInterface`;

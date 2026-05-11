@@ -151,6 +151,81 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures commit-and-save writes committed AST mutations to disk.
+     */
+    public function testItCommitsAndSavesUpdatedSourceFiles(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                }
+            }
+            PHP);
+        $sourceFilePath = $this->sourceFilePath('Mailer.php');
+
+        $transaction = $renamer->beginTransaction();
+
+        $transaction->renameClass('App\\Mailer', 'Sender');
+
+        $result = $transaction->commitAndSave();
+        $fileContents = (string) file_get_contents($sourceFilePath);
+
+        self::assertSame(RenameTransactionStatus::COMMITTED, $result->status);
+        self::assertStringContainsString('final class Sender', $fileContents);
+        self::assertStringNotContainsString('final class Mailer', $fileContents);
+    }
+
+    /**
+     * Ensures targeted commit-and-save writes only the requested physical source file.
+     */
+    public function testItCommitsAndSavesOneUpdatedSourceFile(): void
+    {
+        $renamer = $this->renamerWithFixtures([
+            'Mailer.php' => <<<'PHP'
+                <?php
+
+                namespace App;
+
+                final class Mailer
+                {
+                }
+                PHP,
+            'Notifier.php' => <<<'PHP'
+                <?php
+
+                namespace App;
+
+                final class Notifier
+                {
+                }
+                PHP,
+        ]);
+        $mailerFilePath = $this->sourceFilePath('Mailer.php');
+        $notifierFilePath = $this->sourceFilePath('Notifier.php');
+
+        $transaction = $renamer->beginTransaction();
+
+        $transaction->renameClass('App\\Mailer', 'Sender');
+        $transaction->renameClass('App\\Notifier', 'Alerter');
+
+        $result = $transaction->commitAndSaveSourceFile($mailerFilePath);
+        $mailerContents = (string) file_get_contents($mailerFilePath);
+        $notifierContents = (string) file_get_contents($notifierFilePath);
+
+        self::assertSame(RenameTransactionStatus::COMMITTED, $result->status);
+        self::assertStringContainsString('final class Sender', $mailerContents);
+        self::assertStringNotContainsString('final class Mailer', $mailerContents);
+        self::assertStringContainsString('final class Notifier', $notifierContents);
+        self::assertStringNotContainsString('final class Alerter', $notifierContents);
+    }
+
+    /**
      * Creates a renamer from one source fixture.
      *
      * @param string $fileName the source file name
@@ -158,13 +233,42 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
      */
     private function renamerWithFixture(string $fileName, string $contents): PhpRename
     {
+        return $this->renamerWithFixtures([$fileName => $contents]);
+    }
+
+    /**
+     * Creates a renamer from source fixtures.
+     *
+     * @param array<string, string> $files the source file names mapped to contents
+     */
+    private function renamerWithFixtures(array $files): PhpRename
+    {
         $srcDirectory = $this->workspace.'/src';
         $cacheFilePath = $this->workspace.'/member-graph.cache';
 
         mkdir($srcDirectory, 0o777, true);
-        file_put_contents($srcDirectory.'/'.$fileName, $contents);
+
+        foreach ($files as $fileName => $contents) {
+            file_put_contents($srcDirectory.'/'.$fileName, $contents);
+        }
 
         return PhpRename::fromDirectory([$srcDirectory], $cacheFilePath);
+    }
+
+    /**
+     * Returns the absolute path to one fixture source file.
+     *
+     * @param string $fileName the source file name
+     */
+    private function sourceFilePath(string $fileName): string
+    {
+        $filePath = realpath($this->workspace.'/src/'.$fileName);
+
+        if (false === $filePath) {
+            throw new \RuntimeException("Source file $fileName not found");
+        }
+
+        return $filePath;
     }
 
     /**
