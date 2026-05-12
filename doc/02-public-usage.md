@@ -128,6 +128,17 @@ Each step plans against the context current build, applies the AST mutation when
 
 The step API is intentionally service-specific. A future orchestration package such as `php-refactor` should adapt its own transaction context to `RenameStepContext` instead of requiring `php-rename` to depend on orchestrator contracts.
 
+The step API is transaction-neutral:
+
+- it does not create source snapshots;
+- it does not restore source snapshots;
+- it does not own rollback policy;
+- when `applied` is `true`, `touchedFiles` lists the virtual files mutated by the step;
+- when `applied` is `false`, the returned `context` is the input context and the caller decides whether to stop or continue;
+- blocking diagnostics should normally make an external orchestrator stop the global transaction and restore its own snapshots.
+
+`PhpRenameTransaction` is the local transaction wrapper for standalone `php-rename` usage. It uses the same step execution path, but it adds local snapshots, local rollback, local status transitions, and local commit/save helpers. A global orchestrator should call `executeStep...Rename()` directly instead of nesting `PhpRenameTransaction`.
+
 ## Public API Stability
 
 The stable public entry points are:
