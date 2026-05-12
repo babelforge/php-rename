@@ -99,6 +99,35 @@ If a rename action produces a blocking diagnostic, the transaction enters a fail
 $rollbackResult = $transaction->rollback();
 ```
 
+## Execute Orchestrable Rename Steps
+
+Use the step API when an external orchestrator owns the broader workflow and wants to call `php-rename` as one autonomous service:
+
+```php
+use PhpNoobs\PhpRename\Application\PhpRename;
+use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
+
+$renamer = PhpRename::fromBuild($build);
+$context = RenameStepContext::fromBuild($build);
+
+$firstStep = $renamer->executeStepClassFqcnRename(
+    context: $context,
+    className: 'App\\Mailer',
+    newClassName: 'App\\Infrastructure\\Sender',
+);
+
+$secondStep = $renamer->executeStepMethodRename(
+    context: $firstStep->context,
+    className: 'App\\Infrastructure\\Sender',
+    methodName: 'send',
+    newMethodName: 'deliver',
+);
+```
+
+Each step plans against the context current build, applies the AST mutation when the plan has no blocking diagnostics, records the cumulative `member-graph` overlay when the request is supported by projection, and returns a new context for the next step.
+
+The step API is intentionally service-specific. A future orchestration package such as `php-refactor` should adapt its own transaction context to `RenameStepContext` instead of requiring `php-rename` to depend on orchestrator contracts.
+
 ## Plan A Method Rename
 
 Planning should produce operations and diagnostics without mutating virtual files:

@@ -32,6 +32,8 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
+use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
+use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepResult;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassConstantRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassFqcnRenamePlanner;
 use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner\MemberGraphClassRenamePlanner;
@@ -175,6 +177,299 @@ final readonly class PhpRename
             parameterRenamePlanner: $this->parameterRenamePlanner,
             renamePlanApplier: $this->renamePlanApplier,
         );
+    }
+
+    /**
+     * Executes one preplanned orchestrable rename step.
+     *
+     * @param RenamePlan        $plan    the rename plan to execute
+     * @param RenameStepContext $context the current rename step context
+     */
+    public function executeStep(RenamePlan $plan, RenameStepContext $context): RenameStepResult
+    {
+        return new RenameStepExecutor($this->renamePlanApplier)->execute($plan, $context);
+    }
+
+    /**
+     * Executes one orchestrable method rename step.
+     *
+     * @param RenameStepContext    $context        the current rename step context
+     * @param string               $className      the class name that anchors the method rename
+     * @param string               $methodName     the current method name
+     * @param string               $newMethodName  the replacement method name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepMethodRename(
+        RenameStepContext $context,
+        string $className,
+        string $methodName,
+        string $newMethodName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->methodRenamePlanner->plan(
+            request: new MethodRenameRequest($className, $methodName, $newMethodName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable property rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $className       the class name that anchors the property rename
+     * @param string               $propertyName    the current property name
+     * @param string               $newPropertyName the replacement property name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepPropertyRename(
+        RenameStepContext $context,
+        string $className,
+        string $propertyName,
+        string $newPropertyName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->propertyRenamePlanner->plan(
+            request: new PropertyRenameRequest($className, $propertyName, $newPropertyName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable class-constant rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $className       the class name that anchors the class-constant rename
+     * @param string               $constantName    the current class-constant name
+     * @param string               $newConstantName the replacement class-constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepClassConstantRename(
+        RenameStepContext $context,
+        string $className,
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->classConstantRenamePlanner->plan(
+            request: new ClassConstantRenameRequest($className, $constantName, $newConstantName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable enum-case rename step.
+     *
+     * @param RenameStepContext    $context        the current rename step context
+     * @param string               $enumName       the enum name that anchors the enum-case rename
+     * @param string               $caseName       the current enum-case name
+     * @param string               $newCaseName    the replacement enum-case name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepEnumCaseRename(
+        RenameStepContext $context,
+        string $enumName,
+        string $caseName,
+        string $newCaseName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->enumCaseRenamePlanner->plan(
+            request: new EnumCaseRenameRequest($enumName, $caseName, $newCaseName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable class-like owner rename step.
+     *
+     * @param RenameStepContext    $context        the current rename step context
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement short class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepClassRename(
+        RenameStepContext $context,
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->classRenamePlanner->plan(
+            request: new ClassRenameRequest($className, $newClassName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable class-like owner FQCN rename step.
+     *
+     * @param RenameStepContext    $context        the current rename step context
+     * @param string               $className      the current fully-qualified class-like owner name
+     * @param string               $newClassName   the replacement fully-qualified class-like owner name
+     * @param RenameConflictPolicy $conflictPolicy the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepClassFqcnRename(
+        RenameStepContext $context,
+        string $className,
+        string $newClassName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->classFqcnRenamePlanner->plan(
+            request: new ClassFqcnRenameRequest($className, $newClassName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable function rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement short function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepFunctionRename(
+        RenameStepContext $context,
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->functionRenamePlanner->plan(
+            request: new FunctionRenameRequest($functionName, $newFunctionName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable function FQCN rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $functionName    the current fully-qualified function name
+     * @param string               $newFunctionName the replacement fully-qualified function name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepFunctionFqcnRename(
+        RenameStepContext $context,
+        string $functionName,
+        string $newFunctionName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->functionFqcnRenamePlanner->plan(
+            request: new FunctionFqcnRenameRequest($functionName, $newFunctionName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable namespace-level constant rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement short constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepConstantRename(
+        RenameStepContext $context,
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->constantRenamePlanner->plan(
+            request: new ConstantRenameRequest($constantName, $newConstantName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable namespace-level constant FQCN rename step.
+     *
+     * @param RenameStepContext    $context         the current rename step context
+     * @param string               $constantName    the current fully-qualified constant name
+     * @param string               $newConstantName the replacement fully-qualified constant name
+     * @param RenameConflictPolicy $conflictPolicy  the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepConstantFqcnRename(
+        RenameStepContext $context,
+        string $constantName,
+        string $newConstantName,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->constantFqcnRenamePlanner->plan(
+            request: new ConstantFqcnRenameRequest($constantName, $newConstantName, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable method parameter rename step.
+     *
+     * @param RenameStepContext    $context          the current rename step context
+     * @param string               $className        the method owner FQCN
+     * @param string               $methodName       the method name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepMethodParameterRename(
+        RenameStepContext $context,
+        string $className,
+        string $methodName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->parameterRenamePlanner->plan(
+            request: new ParameterRenameRequest($className, $methodName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable function parameter rename step.
+     *
+     * @param RenameStepContext    $context          the current rename step context
+     * @param string               $functionName     the fully-qualified function name
+     * @param string               $parameterName    the current parameter name without "$"
+     * @param string               $newParameterName the replacement parameter name without "$"
+     * @param int|null             $parameterIndex   the optional zero-based declaration index
+     * @param RenameConflictPolicy $conflictPolicy   the rename conflict policy
+     *
+     * @throws \InvalidArgumentException when one rename input is invalid
+     */
+    public function executeStepFunctionParameterRename(
+        RenameStepContext $context,
+        string $functionName,
+        string $parameterName,
+        string $newParameterName,
+        ?int $parameterIndex = null,
+        RenameConflictPolicy $conflictPolicy = RenameConflictPolicy::FAIL,
+    ): RenameStepResult {
+        return $this->executeStep($this->parameterRenamePlanner->plan(
+            request: new ParameterRenameRequest('', $functionName, $parameterName, $newParameterName, $parameterIndex, $conflictPolicy),
+            build: $context->currentBuild,
+        ), $context);
     }
 
     /**

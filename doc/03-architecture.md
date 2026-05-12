@@ -16,6 +16,8 @@ The architecture is intentionally small at this stage.
 - `RenameConflictPolicy`: defines whether detected conflicts become warnings or blocking errors.
 - `RenameSymbolKind`: identifies the kind of symbol being renamed.
 - `RenameOperationRole`: identifies why a node is part of the plan.
+- `RenameStepContext`: carries the semantic state needed to execute one autonomous rename step.
+- `RenameStepResult`: returns the post-step context, plan, diagnostics, low-level rename result, touched files, and applied state.
 - `RenameTransactionStatus`: identifies transaction lifecycle state.
 - `RenameTransactionResult`: aggregates transaction action results, final build, final virtual files, and diagnostics.
 
@@ -54,8 +56,25 @@ It exposes:
 - `renameMethodParameter()`;
 - `planFunctionParameterRename()`;
 - `renameFunctionParameter()`.
+- `executeStep()`;
+- `executeStepClassRename()`;
+- `executeStepClassFqcnRename()`;
+- `executeStepMethodRename()`;
+- `executeStepPropertyRename()`;
+- `executeStepClassConstantRename()`;
+- `executeStepEnumCaseRename()`;
+- `executeStepFunctionRename()`;
+- `executeStepFunctionFqcnRename()`;
+- `executeStepConstantRename()`;
+- `executeStepConstantFqcnRename()`;
+- `executeStepMethodParameterRename()`;
+- `executeStepFunctionParameterRename()`.
+
+`Application/RenameStepExecutor` owns the common execution path for autonomous steps. It applies a plan, aggregates diagnostics, updates the cumulative `member-graph` overlay when possible, projects the next build, and falls back to a cache-free rebuild from virtual files when projection cannot represent a request.
 
 `Application/PhpRenameTransaction` mirrors the direct rename methods and maintains a cumulative `member-graph` overlay during the transaction. After each successful supported action, it asks `member-graph` for a projected build. Unsupported actions can still fall back to `MemberDependencyGraphFactory::fromVirtualFiles(...)`.
+
+Transactions reuse the same step execution path as the orchestrable API, so direct transaction calls and external orchestration calls keep the same planning, application, overlay, and fallback behavior.
 
 `commit()` finalizes the in-memory transaction. `commitAndSave()` and `commitAndSaveSourceFile()` finalize the transaction and delegate physical writing to the `sourceRegistry()` exposed by the final `member-graph` build.
 

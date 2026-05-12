@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace PhpNoobs\PhpRename\Tests\Integration;
 
+use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\PhpRename\Application\PhpRename;
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
+use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
 use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
 use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
@@ -223,6 +225,46 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
         self::assertStringNotContainsString('final class Mailer', $mailerContents);
         self::assertStringContainsString('final class Notifier', $notifierContents);
         self::assertStringNotContainsString('final class Alerter', $notifierContents);
+    }
+
+    /**
+     * Ensures orchestrable rename steps can be chained through returned contexts.
+     */
+    public function testItExecutesOrchestrableRenameSteps(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        file_put_contents($srcDirectory.'/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                }
+            }
+            PHP);
+
+        $build = MemberDependencyGraphFactory::fromDirectory([$srcDirectory], $cacheFilePath);
+        $renamer = PhpRename::fromBuild($build);
+        $context = RenameStepContext::fromBuild($build);
+
+        $firstStep = $renamer->executeStepClassFqcnRename($context, 'App\\Mailer', 'App\\Infrastructure\\Sender');
+        $secondStep = $renamer->executeStepMethodRename($firstStep->context, 'App\\Infrastructure\\Sender', 'send', 'deliver');
+        $printedCode = $this->printedCode($secondStep->context->currentBuild->virtualFiles);
+
+        self::assertTrue($firstStep->applied);
+        self::assertTrue($secondStep->applied);
+        self::assertCount(0, $firstStep->diagnostics);
+        self::assertCount(0, $secondStep->diagnostics);
+        self::assertStringContainsString('namespace App\\Infrastructure;', $printedCode);
+        self::assertStringContainsString('final class Sender', $printedCode);
+        self::assertStringContainsString('public function deliver(): void', $printedCode);
+        self::assertGreaterThan(0, count(MemberGraphSourceNodeLocator::fromBuild($secondStep->context->currentBuild)->method('App\\Infrastructure\\Sender', 'deliver')));
     }
 
     /**
