@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)
 
-`PhpRename` is designed as a small specialized library, not as a general refactoring framework.
+`PhpRename` is a small specialized library, not a general refactoring framework.
 
 Its responsibility is to rename PHP symbols safely by combining:
 
@@ -31,9 +31,9 @@ Its responsibility is to rename PHP symbols safely by combining:
 
 Physical file writing is delegated to `php-source-registry` through the source registry exposed by `member-graph`.
 
-## Current Status
+## Supported Features
 
-The current implementation provides:
+`php-rename` provides:
 
 - `PhpRename` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
@@ -45,16 +45,16 @@ The current implementation provides:
 - conflict policy with blocking and report-only modes;
 - transaction helpers for in-memory commits, rollback, and optional source-registry writing.
 
-The current implementation does not move file paths, rename whole namespaces, or rebuild `member-graph` caches after mutation.
+`php-rename` does not move file paths, rename whole namespaces, or rebuild `member-graph` caches after mutation.
 
 ## Boundary Decisions
 
-Namespace-wide rename is not currently a first-class `php-rename` operation. It is broader than a single symbol rename because it affects many declarations, imports, FQCN references, and often physical paths. That orchestration belongs to a future higher-level package such as `php-refactor`.
+Namespace-wide rename is not a first-class `php-rename` operation. It is broader than a single symbol rename because it affects many declarations, imports, FQCN references, and often physical paths. That orchestration belongs to a higher-level package such as `php-refactor`.
 
 FQCN symbol renames can update the namespace node of a matched declaration, but they intentionally do not move files on disk. A later writer or refactor layer can consume the updated virtual files and decide whether to move paths.
 
 ## Direction
 
-`php-rename` is now focused on safe symbol rename operations. Broader orchestration such as namespace-wide refactors, file moves, and multi-step clone/extract workflows belongs in a higher-level package such as `php-refactor`.
+`php-rename` focuses on safe symbol rename operations. Broader orchestration such as namespace-wide refactors, file moves, and multi-step clone/extract workflows belongs in a higher-level package such as `php-refactor`.
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)

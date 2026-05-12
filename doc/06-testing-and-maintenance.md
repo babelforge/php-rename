@@ -2,9 +2,9 @@
 
 Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Rename Matrix](07-supported-rename-matrix.md)
 
-Tests should protect behavior before broadening the API.
+Tests protect behavior before broadening the API.
 
-## Current Validation Commands
+## Validation Commands
 
 ```bash
 composer validate --strict
@@ -14,9 +14,9 @@ vendor/bin/phpstan analyse tests --no-progress --error-format=table
 vendor/bin/phpunit
 ```
 
-## Current Tests
+## Test Coverage
 
-The current test suite covers:
+The test suite covers:
 
 - `MethodRenameRequest` validation;
 - `RenameDiagnosticCollection` counting and iteration.
@@ -46,7 +46,7 @@ The current test suite covers:
 
 ## Testing Direction
 
-The method rename workflow should be tested with small readable fixtures.
+Rename workflows are tested with small readable fixtures.
 
 Priority cases:
 
@@ -101,7 +101,7 @@ Priority cases:
 - Keep `member-graph` analysis concerns out of this package.
 - Treat `member-graph` source-node matches as the only rename source of truth.
 - Do not add textual search or fallback AST traversal in `php-rename`.
-- Keep physical file writing out of the first rename milestones.
+- Keep low-level physical file writing in `php-source-registry`.
 - Run PHPStan on both `src` and `tests` before considering a step complete.
 
 Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Rename Matrix](07-supported-rename-matrix.md)

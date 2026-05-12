@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)
 
-The public API should remain small and composable.
+The public API is small and composable.
 
 ## Conflict Policy
 
@@ -43,7 +43,7 @@ $result = $renamer->renameMethod(
 
 ## Create From Directories
 
-Use this mode when `PhpRename` should build its own `member-graph` input:
+Use this mode when `PhpRename` builds its own `member-graph` input:
 
 ```php
 use PhpNoobs\PhpRename\Application\PhpRename;
@@ -64,7 +64,7 @@ use PhpNoobs\PhpRename\Application\PhpRename;
 $renamer = PhpRename::fromBuild($build);
 ```
 
-This is the preferred integration point for future orchestration packages such as `php-refactor`.
+This is the integration point for orchestration packages such as `php-refactor`.
 
 ## Use A Rename Transaction
 
@@ -126,7 +126,7 @@ $secondStep = $renamer->executeStepMethodRename(
 
 Each step plans against the context current build, applies the AST mutation when the plan has no blocking diagnostics, records the cumulative `member-graph` overlay when the request is supported by projection, and returns a new context for the next step.
 
-The step API is intentionally service-specific. A future orchestration package such as `php-refactor` should adapt its own transaction context to `RenameStepContext` instead of requiring `php-rename` to depend on orchestrator contracts.
+The step API is intentionally service-specific. An orchestration package such as `php-refactor` adapts its own transaction context to `RenameStepContext` instead of requiring `php-rename` to depend on orchestrator contracts.
 
 The step API is transaction-neutral:
 
@@ -135,9 +135,9 @@ The step API is transaction-neutral:
 - it does not own rollback policy;
 - when `applied` is `true`, `touchedFiles` lists the virtual files mutated by the step;
 - when `applied` is `false`, the returned `context` is the input context and the caller decides whether to stop or continue;
-- blocking diagnostics should normally make an external orchestrator stop the global transaction and restore its own snapshots.
+- blocking diagnostics normally make an external orchestrator stop the global transaction and restore its own snapshots.
 
-`PhpRenameTransaction` is the local transaction wrapper for standalone `php-rename` usage. It uses the same step execution path, but it adds local snapshots, local rollback, local status transitions, and local commit/save helpers. A global orchestrator should call `executeStep...Rename()` directly instead of nesting `PhpRenameTransaction`.
+`PhpRenameTransaction` is the local transaction wrapper for standalone `php-rename` usage. It uses the same step execution path, but it adds local snapshots, local rollback, local status transitions, and local commit/save helpers. A global orchestrator calls `executeStep...Rename()` directly instead of nesting `PhpRenameTransaction`.
 
 ## Public API Stability
 
@@ -150,13 +150,13 @@ The stable public entry points are:
 - orchestrable step methods named `executeStep...Rename()`;
 - `RenameStepContext` and `RenameStepResult` for orchestration.
 
-`php-refactor` should consume the orchestrable step methods and keep its own adapters outside this package.
+`php-refactor` consumes the orchestrable step methods and keeps its own adapters outside this package.
 
 Infrastructure classes under `Infrastructure/` are implementation details. They can be replaced or reorganized as long as the public facade, transaction API, step API, diagnostics, plans, and results keep their documented behavior.
 
 ## Plan A Method Rename
 
-Planning should produce operations and diagnostics without mutating virtual files:
+Planning produces operations and diagnostics without mutating virtual files:
 
 ```php
 $plan = $renamer->planMethodRename(
@@ -166,11 +166,11 @@ $plan = $renamer->planMethodRename(
 );
 ```
 
-The current implementation converts `member-graph` source-node matches into rename operations.
+The planner converts `member-graph` source-node matches into rename operations.
 
 ## Apply A Method Rename
 
-The convenience method should plan and apply in one call:
+The convenience method plans and applies in one call:
 
 ```php
 $result = $renamer->renameMethod(
@@ -180,7 +180,7 @@ $result = $renamer->renameMethod(
 );
 ```
 
-The current implementation mutates matched method declaration and usage nodes in virtual files.
+The applier mutates matched method declaration and usage nodes in virtual files.
 
 ## Plan And Apply A Class Rename
 
@@ -198,7 +198,7 @@ $result = $renamer->renameClass(
 );
 ```
 
-The class planner uses `member-graph` owner source-node matches only. The first class rename slice does not move classes between namespaces.
+The class planner uses `member-graph` owner source-node matches only. Short class rename does not move classes between namespaces.
 
 ## Plan And Apply A Class FQCN Rename
 

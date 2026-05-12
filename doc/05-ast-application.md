@@ -32,11 +32,11 @@ The applier returns a `RenameResult` containing:
 - the virtual files after mutation;
 - application diagnostics.
 
-## Current Implementation
+## Supported Node Mutations
 
 Plans containing error diagnostics are not applied. This lets planning-time conflict policy block unsafe mutations while still returning the planned diagnostics to the caller.
 
-`AstRenamePlanApplier` currently supports method renaming for:
+`AstRenamePlanApplier` supports method renaming for:
 
 - `PhpParser\Node\Stmt\ClassMethod`;
 - `PhpParser\Node\Expr\MethodCall`;
@@ -102,7 +102,7 @@ Unsupported operation kinds or node types produce diagnostics instead of trigger
 
 Docblock mutation is implemented as metadata application after a node mutation succeeds.
 
-Current supported method docblock references:
+Supported method docblock references:
 
 ```php
 self::oldName()
@@ -112,7 +112,7 @@ parent::oldName()
 
 These references are renamed only on matched method declaration docblocks.
 
-Current supported class docblock references:
+Supported class docblock references:
 
 ```php
 @see OldClass
@@ -129,7 +129,7 @@ These references are renamed only on matched class-like owner declaration docblo
 
 For class FQCN rename, structured docblock tags can also rename fully-qualified class references such as `@see App\OldClass`.
 
-Current supported property docblock references:
+Supported property docblock references:
 
 ```php
 self::$oldName
@@ -142,7 +142,7 @@ parent::$oldName
 
 These references are renamed only on matched property declaration docblocks through the parent `Property` node, directly on promoted-property `Param` docblocks, or direct class-like parent docblocks for `@property*` tags.
 
-Current supported class-constant docblock references:
+Supported class-constant docblock references:
 
 ```php
 self::OLD_NAME
@@ -152,7 +152,7 @@ parent::OLD_NAME
 
 These references are renamed only on matched class-constant declaration docblocks through the parent `ClassConst` node, or on matched enum-case docblocks.
 
-Current supported function docblock references:
+Supported function docblock references:
 
 ```php
 old_function()
@@ -161,7 +161,7 @@ old_function()
 
 These references are renamed only on matched function declaration docblocks, with structured `@see` support for fully-qualified function names.
 
-Current supported namespace-level constant docblock references:
+Supported namespace-level constant docblock references:
 
 ```php
 @see OLD_NAME
@@ -170,7 +170,7 @@ Current supported namespace-level constant docblock references:
 
 These references are renamed only on matched namespace-level constant declaration docblocks through the parent `Stmt\Const_` node.
 
-Current supported parameter docblock references:
+Supported parameter docblock references:
 
 ```php
 @param Type $oldName

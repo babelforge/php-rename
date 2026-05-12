@@ -133,7 +133,7 @@ Given:
 $renamer->planMethodRename(ClassName::class, 'oldName', 'newName');
 ```
 
-The planner should include:
+The planner includes:
 
 - the target declaration;
 - parent declarations linked to the same method contract;
@@ -181,9 +181,9 @@ Conflict comparisons follow PHP naming semantics: class-like, function, and meth
 
 Method renames involving PHP magic method names also emit non-blocking semantic warnings because they can change runtime behavior. These warnings are owned by `php-rename` policy and do not require extra `member-graph` facts.
 
-## Current Implementation
+## Planner Implementations
 
-`MemberGraphMethodRenamePlanner` currently:
+`MemberGraphMethodRenamePlanner`:
 
 - calls `MemberGraphSourceNodeLocator::fromBuild($build)->method(...)`;
 - converts member declaration matches to declaration rename operations;
@@ -217,7 +217,7 @@ The planner intentionally does not search source code by itself.
 
 ## Docblock Boundary
 
-Docblocks are source metadata and will need dedicated handling.
+Docblocks are source metadata and have dedicated handling.
 
 The same source-of-truth rule applies:
 

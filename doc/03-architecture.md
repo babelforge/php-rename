@@ -21,7 +21,7 @@ The architecture is intentionally small at this stage.
 - `RenameTransactionStatus`: identifies transaction lifecycle state.
 - `RenameTransactionResult`: aggregates transaction action results, final build, final virtual files, and diagnostics.
 
-Domain objects should stay independent from orchestration logic.
+Domain objects stay independent from orchestration logic.
 
 ## Application
 
@@ -78,7 +78,7 @@ Transactions reuse the same step execution path as the orchestrable API, so dire
 
 `RenameStepExecutor` is transaction-neutral. It never snapshots or rolls back virtual files. Snapshot ownership belongs either to `PhpRenameTransaction` for local usage or to an external orchestrator such as `php-refactor` for cross-service workflows.
 
-The public API contract is covered by dedicated reflection tests. Those tests intentionally lock facade method names, transaction method names, step DTO properties, and key return types so future changes are deliberate rather than accidental.
+The public API contract is covered by dedicated reflection tests. Those tests intentionally lock facade method names, transaction method names, step DTO properties, and key return types so API changes are deliberate rather than accidental.
 
 `commit()` finalizes the in-memory transaction. `commitAndSave()` and `commitAndSaveSourceFile()` finalize the transaction and delegate physical writing to the `sourceRegistry()` exposed by the final `member-graph` build.
 
@@ -105,7 +105,7 @@ The public API contract is covered by dedicated reflection tests. Those tests in
 
 `Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
 
-Infrastructure code can depend on external packages. Domain objects should remain simple and explicit.
+Infrastructure code can depend on external packages. Domain objects remain simple and explicit.
 
 ## Rename Application
 
@@ -140,6 +140,6 @@ Current implementations:
 
 Do not add a broad refactoring abstraction before the method rename path is proven.
 
-The package should grow from concrete safe rename workflows, then generalize only when duplication becomes real.
+The package grows from concrete safe rename workflows and generalizes only when duplication becomes real.
 
 Navigation: [Documentation](README.md) | [Previous: Public Usage](02-public-usage.md) | [Next: Rename Planning](04-rename-planning.md)

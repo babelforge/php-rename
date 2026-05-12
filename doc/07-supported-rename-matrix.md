@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md)
 
-This page records what `php-rename` currently supports and where the package boundary stops.
+This page records what `php-rename` supports and where the package boundary stops.
 
 ## Matrix
 
@@ -22,7 +22,7 @@ This page records what `php-rename` currently supports and where the package bou
 
 ## Explicit Non-Goals
 
-Namespace-wide rename is not a supported first-class operation in `php-rename`. It should be handled by a future orchestration layer that can combine multiple symbol renames, import rewrites, path moves, and cache updates.
+Namespace-wide rename is not a supported first-class operation in `php-rename`. It belongs to an orchestration layer that can combine multiple symbol renames, import rewrites, path moves, and cache updates.
 
 Physical path moves are not performed by `php-rename`. FQCN renames mutate AST namespace declarations and usages in virtual files only.
 
