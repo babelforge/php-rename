@@ -128,6 +128,21 @@ Each step plans against the context current build, applies the AST mutation when
 
 The step API is intentionally service-specific. A future orchestration package such as `php-refactor` should adapt its own transaction context to `RenameStepContext` instead of requiring `php-rename` to depend on orchestrator contracts.
 
+## Public API Stability
+
+The stable public entry points are:
+
+- `PhpRename::fromDirectory()` and `PhpRename::fromBuild()`;
+- direct planning methods named `plan...Rename()`;
+- direct application methods named `rename...()`;
+- transaction methods exposed by `PhpRenameTransaction`;
+- orchestrable step methods named `executeStep...Rename()`;
+- `RenameStepContext` and `RenameStepResult` for orchestration.
+
+`php-refactor` should consume the orchestrable step methods and keep its own adapters outside this package.
+
+Infrastructure classes under `Infrastructure/` are implementation details. They can be replaced or reorganized as long as the public facade, transaction API, step API, diagnostics, plans, and results keep their documented behavior.
+
 ## Plan A Method Rename
 
 Planning should produce operations and diagnostics without mutating virtual files:

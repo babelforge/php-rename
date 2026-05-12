@@ -76,6 +76,8 @@ It exposes:
 
 Transactions reuse the same step execution path as the orchestrable API, so direct transaction calls and external orchestration calls keep the same planning, application, overlay, and fallback behavior.
 
+The public API contract is covered by dedicated reflection tests. Those tests intentionally lock facade method names, transaction method names, step DTO properties, and key return types so future changes are deliberate rather than accidental.
+
 `commit()` finalizes the in-memory transaction. `commitAndSave()` and `commitAndSaveSourceFile()` finalize the transaction and delegate physical writing to the `sourceRegistry()` exposed by the final `member-graph` build.
 
 `Application/Contract` contains the service contracts used by the facade:

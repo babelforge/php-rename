@@ -8,6 +8,7 @@ use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 use PhpNoobs\PhpRename\Application\PhpRename;
 use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
 use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
 use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
@@ -268,6 +269,46 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures a blocked orchestrable step keeps the previous context unchanged.
+     */
+    public function testItDoesNotAdvanceOrchestrableContextAfterBlockingDiagnostics(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        file_put_contents($srcDirectory.'/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                }
+
+                public function deliver(): void
+                {
+                }
+            }
+            PHP);
+
+        $build = MemberDependencyGraphFactory::fromDirectory([$srcDirectory], $cacheFilePath);
+        $renamer = PhpRename::fromBuild($build);
+        $context = RenameStepContext::fromBuild($build);
+
+        $step = $renamer->executeStepMethodRename($context, 'App\\Mailer', 'send', 'deliver');
+        $printedCode = $this->printedCode($step->context->currentBuild->virtualFiles);
+
+        self::assertFalse($step->applied);
+        self::assertSame($context, $step->context);
+        self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstStepDiagnosticSeverity($step->diagnostics));
+        self::assertStringContainsString('public function send(): void', $printedCode);
+        self::assertStringContainsString('public function deliver(): void', $printedCode);
+    }
+
+    /**
      * Creates a renamer from one source fixture.
      *
      * @param string $fileName the source file name
@@ -329,6 +370,20 @@ final class PhpRenameTransactionIntegrationTest extends TestCase
     private function firstTransactionDiagnosticSeverity(RenameTransactionResult $result): ?RenameDiagnosticSeverity
     {
         foreach ($result->diagnostics as $diagnostic) {
+            return $diagnostic->severity;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the first step diagnostic severity.
+     *
+     * @param RenameDiagnosticCollection $diagnostics the step diagnostics
+     */
+    private function firstStepDiagnosticSeverity(RenameDiagnosticCollection $diagnostics): ?RenameDiagnosticSeverity
+    {
+        foreach ($diagnostics as $diagnostic) {
             return $diagnostic->severity;
         }
 
