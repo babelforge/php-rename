@@ -12,8 +12,6 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplie
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Function_;
 
 /**
  * Renames supported parameter references inside the matched function-like declaration docblock.
@@ -44,45 +42,47 @@ final readonly class ParameterDocblockRenameApplier implements RenameMetadataApp
             return;
         }
 
-        $functionLike = $this->functionLikeParent($operation->node);
+        foreach ($this->docblockOwners($operation->node) as $docblockOwner) {
+            $docComment = $docblockOwner->getDocComment();
 
-        if (null === $functionLike) {
+            if (null === $docComment) {
+                continue;
+            }
+
+            $updatedText = $this->renameParamTag(
+                text: $docComment->getText(),
+                oldName: $operation->oldName,
+                newName: $operation->newName,
+            );
+
+            if ($updatedText === $docComment->getText()) {
+                continue;
+            }
+
+            $docblockOwner->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
+
             return;
         }
-
-        $docComment = $functionLike->getDocComment();
-
-        if (null === $docComment) {
-            return;
-        }
-
-        $updatedText = $this->renameParamTag(
-            text: $docComment->getText(),
-            oldName: $operation->oldName,
-            newName: $operation->newName,
-        );
-
-        if ($updatedText === $docComment->getText()) {
-            return;
-        }
-
-        $functionLike->setDocComment(new Doc($updatedText, $docComment->getStartLine(), $docComment->getStartFilePos()));
     }
 
     /**
-     * Returns the function-like parent for one parameter declaration.
+     * Returns candidate docblock owners from the parameter parent chain.
      *
      * @param Param $parameter the parameter declaration node
+     *
+     * @return list<Node>
      */
-    private function functionLikeParent(Param $parameter): ClassMethod|Function_|null
+    private function docblockOwners(Param $parameter): array
     {
+        $owners = [];
         $parent = $parameter->getAttribute('parent');
 
-        if ($parent instanceof ClassMethod || $parent instanceof Function_) {
-            return $parent;
+        while ($parent instanceof Node) {
+            $owners[] = $parent;
+            $parent = $parent->getAttribute('parent');
         }
 
-        return null;
+        return $owners;
     }
 
     /**

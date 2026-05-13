@@ -75,7 +75,8 @@ Transactions support rollback after blocking diagnostics.
 - enum case renames;
 - function short and FQCN renames;
 - namespace-level constant short and FQCN renames;
-- method and function parameter renames.
+- method and function parameter renames;
+- closure and arrow-function parameter renames inside method, function, or file containers.
 
 Supported operations include declarations, usages, imports, selected structured docblocks, conflict diagnostics, transaction-local overlays, and transaction-neutral orchestration steps.
 

@@ -30,6 +30,7 @@ The test suite covers:
 - namespace-level constant rename planning and AST application against a real `member-graph` build.
 - namespace-level constant FQCN rename planning and AST application against a real `member-graph` build.
 - parameter rename planning and AST application against a real `member-graph` build.
+- nested callable parameter rename planning and AST application for closures, arrow functions, direct usage, step execution, and transactions.
 - conflict policy for blocking errors and report-only warnings across every supported rename family.
 - no-op rename planning across every supported rename family.
 - request validation for invalid identifiers and FQCN-like names.
@@ -76,6 +77,7 @@ Priority cases:
 - named argument rename;
 - local parameter usage rename;
 - `@param` docblock rename;
+- closure and arrow-function parameter declaration plus local usage rename;
 - structured docblock tags such as `@method`, `@property*`, `@mixin`, multi-line `@param`, and function `@see`;
 - parent and child method declarations;
 - trait method declaration;

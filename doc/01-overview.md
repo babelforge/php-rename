@@ -37,7 +37,7 @@ Physical file writing is delegated to `php-source-registry` through the source r
 
 - `PhpRename` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
-- plan/apply APIs for class-like owners, methods, properties, class constants, enum cases, functions, namespace-level constants, and parameters;
+- plan/apply APIs for class-like owners, methods, properties, class constants, enum cases, functions, namespace-level constants, parameters, and nested callable parameters;
 - domain DTOs for plans, operations, results, and diagnostics;
 - contracts for planning and applying rename plans;
 - `member-graph` planners that convert source-node matches into rename operations;

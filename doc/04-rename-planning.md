@@ -211,6 +211,8 @@ Method renames involving PHP magic method names also emit non-blocking semantic 
 
 `MemberGraphParameterRenamePlanner` follows the same pattern with `MemberGraphSourceNodeLocator::parameter(...)`.
 
+`MemberGraphNestedCallableRenamePlanner` resolves a method or function container through `MemberGraphSourceNodeLocator`, or a file container through the loaded virtual files. It then selects a closure or arrow function by deterministic zero-based DFS index inside that explicit container. The planner only scans inside the selected container and selected callable; it does not perform project-wide discovery or text search.
+
 Each planner also asks `MemberGraphRenameConflictGuard` to convert neutral scope facts from `MemberGraphSymbolScopeLocator` or `MemberGraphSourceNodeLocator::parameterScope(...)` into policy-driven diagnostics.
 
 The planner intentionally does not search source code by itself.

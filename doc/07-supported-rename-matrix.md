@@ -19,6 +19,7 @@ This page records what `php-rename` supports and where the package boundary stop
 | Namespace-level constant short rename | Namespace-level `Const_` declarations returned by `member-graph` | Constant fetches returned by `member-graph` | Existing `use const` imports are rewritten to the renamed FQCN | Structured constant `@see` references on matched declaration docblocks | Target namespace constant declarations and constant import aliases | Does not move namespace |
 | Namespace-level constant FQCN rename | Namespace-level `Const_` declarations and direct namespace parent | Constant fetches returned by `member-graph` | `use const` imports, with fully-qualified fallback on alias conflict | Structured constant `@see` references, including FQCN references | Target namespace constant declarations and constant import aliases | Does not move physical file path |
 | Parameter rename | `Param` declarations returned by `member-graph` | Named arguments and local parameter variable usages returned by `member-graph` | Not applicable | Supported `@param` tags on direct function-like parent docblocks | Same-signature parameters and local variables in the declaring body | Local usage coverage follows `member-graph` parameter-scope facts |
+| Nested callable parameter rename | Selected closure or arrow-function `Param` declaration inside an explicit method, function, or file container | Local variable usages inside the selected callable body | Not applicable | Supported `@param` tags on the callable or parent-chain docblock | Same-callable parameters and local variables | Callable selection uses zero-based DFS index inside the explicit container |
 
 ## Explicit Non-Goals
 
@@ -26,6 +27,6 @@ Namespace-wide rename is not a supported first-class operation in `php-rename`. 
 
 Physical path moves are not performed by `php-rename`. FQCN renames mutate AST namespace declarations and usages in virtual files only.
 
-`php-rename` does not discover rename targets by text search or its own semantic traversal. It mutates nodes returned by `member-graph` and metadata attached to those matched nodes or direct structural owners.
+`php-rename` does not discover rename targets by text search or project-wide semantic traversal. It mutates nodes returned by `member-graph`, nodes inside an explicit selected nested callable container, and metadata attached to those matched nodes or structural owners.
 
 Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md)

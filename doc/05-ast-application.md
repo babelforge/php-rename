@@ -83,7 +83,8 @@ It also supports parameter renaming for:
 
 - `PhpParser\Node\Param`;
 - `PhpParser\Node\Arg` named arguments.
-- `PhpParser\Node\Expr\Variable` local parameter usages returned by `member-graph`.
+- `PhpParser\Node\Expr\Variable` local parameter usages returned by `member-graph`;
+- `PhpParser\Node\Expr\Variable` local parameter usages in selected nested callables.
 
 For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 
@@ -176,7 +177,7 @@ Supported parameter docblock references:
 @param Type $oldName
 ```
 
-These references are renamed only on the direct function-like parent docblock of a matched parameter declaration.
+These references are renamed on the nearest parameter parent-chain docblock containing a supported `@param` tag. This covers normal function-like declaration docblocks and closure docblocks attached to structural parents such as the assignment statement that owns the closure expression.
 
 For function FQCN rename, structured docblock references can also rename fully-qualified function references such as `@see App\old_function()`.
 

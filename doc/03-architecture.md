@@ -9,6 +9,7 @@ The architecture is intentionally small at this stage.
 `Domain/Rename` contains the core rename model:
 
 - `MethodRenameRequest`: describes the requested method rename.
+- `NestedCallableRenameRequest`: describes a closure or arrow-function parameter rename inside a method, function, or file container.
 - `RenamePlan`: contains planned operations and diagnostics.
 - `RenameOperation`: targets one AST node in one virtual file.
 - `RenameResult`: contains the result of applying a plan.
@@ -55,7 +56,19 @@ It exposes:
 - `planMethodParameterRename()`;
 - `renameMethodParameter()`;
 - `planFunctionParameterRename()`;
-- `renameFunctionParameter()`.
+- `renameFunctionParameter()`;
+- `planClosureParameterRenameInMethod()`;
+- `renameClosureParameterInMethod()`;
+- `planArrowFunctionParameterRenameInMethod()`;
+- `renameArrowFunctionParameterInMethod()`;
+- `planClosureParameterRenameInFunction()`;
+- `renameClosureParameterInFunction()`;
+- `planArrowFunctionParameterRenameInFunction()`;
+- `renameArrowFunctionParameterInFunction()`;
+- `planClosureParameterRenameInFile()`;
+- `renameClosureParameterInFile()`;
+- `planArrowFunctionParameterRenameInFile()`;
+- `renameArrowFunctionParameterInFile()`;
 - `executeStep()`;
 - `executeStepClassRename()`;
 - `executeStepClassFqcnRename()`;
@@ -68,7 +81,13 @@ It exposes:
 - `executeStepConstantRename()`;
 - `executeStepConstantFqcnRename()`;
 - `executeStepMethodParameterRename()`;
-- `executeStepFunctionParameterRename()`.
+- `executeStepFunctionParameterRename()`;
+- `executeStepClosureParameterRenameInMethod()`;
+- `executeStepArrowFunctionParameterRenameInMethod()`;
+- `executeStepClosureParameterRenameInFunction()`;
+- `executeStepArrowFunctionParameterRenameInFunction()`;
+- `executeStepClosureParameterRenameInFile()`;
+- `executeStepArrowFunctionParameterRenameInFile()`.
 
 `Application/RenameStepExecutor` owns the common execution path for autonomous steps. It applies a plan, aggregates diagnostics, updates the cumulative `member-graph` overlay when possible, projects the next build, and falls back to a cache-free rebuild from virtual files when projection cannot represent a request.
 
@@ -95,6 +114,7 @@ The public API contract is covered by dedicated reflection tests. Those tests in
 - `ConstantRenamePlannerInterface`;
 - `ConstantFqcnRenamePlannerInterface`;
 - `ParameterRenamePlannerInterface`;
+- `NestedCallableRenamePlannerInterface`;
 - `RenamePlanApplierInterface`.
 
 ## Infrastructure

@@ -319,6 +319,56 @@ $result = $renamer->renameFunctionParameter(
 
 When `parameterIndex` is provided, `member-graph` must match both the parameter name and its declaration index. The current slice mutates parameter declarations, named arguments, local parameter usages returned by `member-graph`, and supported `@param` docblock tags.
 
+## Nested Callable Parameters
+
+Closure and arrow-function parameter renames are scoped to an explicit container and a deterministic zero-based callable index.
+
+Method container:
+
+```php
+$result = $renamer->renameClosureParameterInMethod(
+    className: 'App\\Mailer',
+    methodName: 'send',
+    closureIndex: 0,
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+);
+
+$result = $renamer->renameArrowFunctionParameterInMethod(
+    className: 'App\\Mailer',
+    methodName: 'send',
+    arrowIndex: 0,
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+);
+```
+
+Function container:
+
+```php
+$result = $renamer->renameClosureParameterInFunction(
+    functionName: 'App\\map_message',
+    closureIndex: 0,
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+);
+```
+
+File container:
+
+```php
+$result = $renamer->renameArrowFunctionParameterInFile(
+    filePath: '/project/src/bootstrap.php',
+    arrowIndex: 0,
+    parameterName: 'message',
+    newParameterName: 'emailMessage',
+);
+```
+
+The generic request API is available through `NestedCallableRenameRequest` and `renameNestedCallableParameter()`. The step API mirrors the same operations with `executeStepClosureParameterRenameInMethod()`, `executeStepArrowFunctionParameterRenameInFunction()`, and the other container variants.
+
+Nested callable parameter rename mutates the selected callable parameter declaration, local variable usages inside the selected callable body, and supported `@param` docblocks attached to the callable or one of its structural parents.
+
 ## Plan And Apply A Function FQCN Rename
 
 Function FQCN rename changes the full logical function name:
