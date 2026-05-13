@@ -65,6 +65,36 @@ final class PhpRenameClassConstantRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures class-constant renaming mutates only the targeted item in grouped declarations.
+     */
+    public function testItRenamesOneClassConstantInsideGroupedDeclaration(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedConstantsMailerFile($srcDirectory.'/Mailer.php');
+        $this->writeGroupedConstantsRunnerFile($srcDirectory.'/Runner.php');
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameClassConstant('App\\Mailer', 'LEGACY_TRANSPORT', 'FALLBACK_TRANSPORT');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertSame(2, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString('public const DEFAULT_TRANSPORT = \'smtp\', FALLBACK_TRANSPORT = \'sendmail\';', $printedCode);
+        self::assertStringContainsString('Mailer::DEFAULT_TRANSPORT', $printedCode);
+        self::assertStringContainsString('Mailer::FALLBACK_TRANSPORT', $printedCode);
+        self::assertStringContainsString('@see self::FALLBACK_TRANSPORT', $printedCode);
+        self::assertStringNotContainsString('LEGACY_TRANSPORT', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -89,6 +119,28 @@ final class PhpRenameClassConstantRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Writes a fixture with a grouped class-constant declaration.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeGroupedConstantsMailerFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                /**
+                 * @see self::LEGACY_TRANSPORT
+                 */
+                public const DEFAULT_TRANSPORT = 'smtp', LEGACY_TRANSPORT = 'sendmail';
+            }
+            PHP);
+    }
+
+    /**
      * Writes the runner fixture.
      *
      * @param string $filePath the file path
@@ -105,6 +157,28 @@ final class PhpRenameClassConstantRenameIntegrationTest extends TestCase
                 public function run(): string
                 {
                     return Mailer::DEFAULT_TRANSPORT;
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes a consumer fixture for grouped class constants.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeGroupedConstantsRunnerFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Runner
+            {
+                public function run(): string
+                {
+                    return Mailer::DEFAULT_TRANSPORT.' '.Mailer::LEGACY_TRANSPORT;
                 }
             }
             PHP);
