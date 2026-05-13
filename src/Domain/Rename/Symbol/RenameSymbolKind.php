@@ -18,4 +18,5 @@ enum RenameSymbolKind
     case ENUM_CASE;
     case PARAMETER;
     case NAMED_ARGUMENT;
+    case LOCAL_VARIABLE;
 }

@@ -29,6 +29,7 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\Function_\FunctionRenameNodeAppl
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Method\MethodRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Parameter\ParameterRenameNodeApplier;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Property\PropertyRenameNodeApplier;
+use PhpNoobs\PhpRename\Infrastructure\PhpParser\Variable\LocalVariableRenameNodeApplier;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
 
 /**
@@ -64,6 +65,7 @@ final readonly class AstRenamePlanApplier implements RenamePlanApplierInterface
             new ClassConstantRenameNodeApplier(),
             new FunctionRenameNodeApplier(),
             new ParameterRenameNodeApplier(),
+            new LocalVariableRenameNodeApplier(),
         ];
         $this->metadataAppliers = $metadataAppliers ?? [
             new ClassDocblockRenameApplier(),

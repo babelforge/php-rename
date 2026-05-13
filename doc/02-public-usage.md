@@ -369,6 +369,38 @@ The generic request API is available through `NestedCallableRenameRequest` and `
 
 Nested callable parameter rename mutates the selected callable parameter declaration, local variable usages inside the selected callable body, explicit nested closure captures such as `use ($message)`, implicit nested arrow-function captures, and supported `@param` docblocks attached to the callable or one of its structural parents. Nested callables that declare their own parameter with the same name are treated as shadowed scopes and are not renamed.
 
+## Nested Callable Local Variables
+
+Nested callable local variable renames use the same explicit container and zero-based callable index model.
+
+```php
+$result = $renamer->renameClosureLocalVariableInMethod(
+    className: 'App\\Mailer',
+    methodName: 'send',
+    closureIndex: 0,
+    variableName: 'copy',
+    newName: 'payload',
+);
+
+$result = $renamer->renameArrowFunctionLocalVariableInFunction(
+    functionName: 'App\\map_message',
+    arrowIndex: 0,
+    variableName: 'message',
+    newName: 'emailMessage',
+);
+
+$result = $renamer->renameClosureLocalVariableInFile(
+    filePath: '/project/src/bootstrap.php',
+    closureIndex: 0,
+    variableName: 'copy',
+    newName: 'payload',
+);
+```
+
+The generic request API is available through `NestedCallableLocalVariableRenameRequest` and `renameNestedCallableLocalVariable()`. Local variable rename is conservative: it mutates string-named `Variable` nodes in the selected callable, explicit nested closure captures that reference the target variable, and implicit nested arrow-function captures unless the nested callable shadows the variable name with its own parameter.
+
+Local variable rename does not update docblocks in this increment.
+
 ## Plan And Apply A Function FQCN Rename
 
 Function FQCN rename changes the full logical function name:

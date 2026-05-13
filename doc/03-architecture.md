@@ -69,6 +69,11 @@ It exposes:
 - `renameClosureParameterInFile()`;
 - `planArrowFunctionParameterRenameInFile()`;
 - `renameArrowFunctionParameterInFile()`;
+- `planNestedCallableLocalVariableRename()`;
+- `renameNestedCallableLocalVariable()`;
+- `renameClosureLocalVariableInMethod()`;
+- `renameArrowFunctionLocalVariableInFunction()`;
+- `renameClosureLocalVariableInFile()`;
 - `executeStep()`;
 - `executeStepClassRename()`;
 - `executeStepClassFqcnRename()`;
@@ -87,7 +92,11 @@ It exposes:
 - `executeStepClosureParameterRenameInFunction()`;
 - `executeStepArrowFunctionParameterRenameInFunction()`;
 - `executeStepClosureParameterRenameInFile()`;
-- `executeStepArrowFunctionParameterRenameInFile()`.
+- `executeStepArrowFunctionParameterRenameInFile()`;
+- `executeStepNestedCallableLocalVariableRename()`;
+- `executeStepClosureLocalVariableRenameInMethod()`;
+- `executeStepArrowFunctionLocalVariableRenameInFunction()`;
+- `executeStepClosureLocalVariableRenameInFile()`.
 
 `Application/RenameStepExecutor` owns the common execution path for autonomous steps. It applies a plan, aggregates diagnostics, updates the cumulative `member-graph` overlay when possible, projects the next build, and falls back to a cache-free rebuild from virtual files when projection cannot represent a request.
 
@@ -115,6 +124,7 @@ The public API contract is covered by dedicated reflection tests. Those tests in
 - `ConstantFqcnRenamePlannerInterface`;
 - `ParameterRenamePlannerInterface`;
 - `NestedCallableRenamePlannerInterface`;
+- `NestedCallableLocalVariableRenamePlannerInterface`;
 - `RenamePlanApplierInterface`.
 
 ## Infrastructure

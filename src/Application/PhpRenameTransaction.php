@@ -16,6 +16,7 @@ use PhpNoobs\PhpRename\Application\Contract\EnumCaseRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
+use PhpNoobs\PhpRename\Application\Contract\NestedCallableLocalVariableRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\NestedCallableRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
 use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
@@ -37,6 +38,7 @@ use PhpNoobs\PhpRename\Infrastructure\PhpParser\Transaction\VirtualPhpSourceFile
  */
 final class PhpRenameTransaction
 {
+    use NestedCallableLocalVariablePhpRenameTransactionMethods;
     use NestedCallablePhpRenameTransactionMethods;
 
     /**
@@ -58,20 +60,21 @@ final class PhpRenameTransaction
     /**
      * Constructor.
      *
-     * @param MemberDependencyGraphBuild           $currentBuild                the current transaction build
-     * @param MethodRenamePlannerInterface         $methodRenamePlanner         the method rename planner
-     * @param PropertyRenamePlannerInterface       $propertyRenamePlanner       the property rename planner
-     * @param ClassConstantRenamePlannerInterface  $classConstantRenamePlanner  the class-constant rename planner
-     * @param EnumCaseRenamePlannerInterface       $enumCaseRenamePlanner       the enum-case rename planner
-     * @param ClassRenamePlannerInterface          $classRenamePlanner          the class rename planner
-     * @param ClassFqcnRenamePlannerInterface      $classFqcnRenamePlanner      the class FQCN rename planner
-     * @param FunctionRenamePlannerInterface       $functionRenamePlanner       the function rename planner
-     * @param FunctionFqcnRenamePlannerInterface   $functionFqcnRenamePlanner   the function FQCN rename planner
-     * @param ConstantRenamePlannerInterface       $constantRenamePlanner       the constant rename planner
-     * @param ConstantFqcnRenamePlannerInterface   $constantFqcnRenamePlanner   the constant FQCN rename planner
-     * @param ParameterRenamePlannerInterface      $parameterRenamePlanner      the parameter rename planner
-     * @param NestedCallableRenamePlannerInterface $nestedCallableRenamePlanner the nested callable rename planner
-     * @param RenamePlanApplierInterface           $renamePlanApplier           the rename plan applier
+     * @param MemberDependencyGraphBuild                        $currentBuild                             the current transaction build
+     * @param MethodRenamePlannerInterface                      $methodRenamePlanner                      the method rename planner
+     * @param PropertyRenamePlannerInterface                    $propertyRenamePlanner                    the property rename planner
+     * @param ClassConstantRenamePlannerInterface               $classConstantRenamePlanner               the class-constant rename planner
+     * @param EnumCaseRenamePlannerInterface                    $enumCaseRenamePlanner                    the enum-case rename planner
+     * @param ClassRenamePlannerInterface                       $classRenamePlanner                       the class rename planner
+     * @param ClassFqcnRenamePlannerInterface                   $classFqcnRenamePlanner                   the class FQCN rename planner
+     * @param FunctionRenamePlannerInterface                    $functionRenamePlanner                    the function rename planner
+     * @param FunctionFqcnRenamePlannerInterface                $functionFqcnRenamePlanner                the function FQCN rename planner
+     * @param ConstantRenamePlannerInterface                    $constantRenamePlanner                    the constant rename planner
+     * @param ConstantFqcnRenamePlannerInterface                $constantFqcnRenamePlanner                the constant FQCN rename planner
+     * @param ParameterRenamePlannerInterface                   $parameterRenamePlanner                   the parameter rename planner
+     * @param NestedCallableRenamePlannerInterface              $nestedCallableRenamePlanner              the nested callable rename planner
+     * @param NestedCallableLocalVariableRenamePlannerInterface $nestedCallableLocalVariableRenamePlanner the nested callable local variable rename planner
+     * @param RenamePlanApplierInterface                        $renamePlanApplier                        the rename plan applier
      */
     public function __construct(
         private MemberDependencyGraphBuild $currentBuild,
@@ -87,6 +90,7 @@ final class PhpRenameTransaction
         private readonly ConstantFqcnRenamePlannerInterface $constantFqcnRenamePlanner,
         private readonly ParameterRenamePlannerInterface $parameterRenamePlanner,
         private readonly NestedCallableRenamePlannerInterface $nestedCallableRenamePlanner,
+        private readonly NestedCallableLocalVariableRenamePlannerInterface $nestedCallableLocalVariableRenamePlanner,
         private readonly RenamePlanApplierInterface $renamePlanApplier,
     ) {
         $this->diagnostics = RenameDiagnosticCollection::empty();
@@ -501,6 +505,7 @@ final class PhpRenameTransaction
             functionFqcnRenamePlanner: $this->functionFqcnRenamePlanner,
             parameterRenamePlanner: $this->parameterRenamePlanner,
             nestedCallableRenamePlanner: $this->nestedCallableRenamePlanner,
+            nestedCallableLocalVariableRenamePlanner: $this->nestedCallableLocalVariableRenamePlanner,
             enumCaseRenamePlanner: $this->enumCaseRenamePlanner,
             constantRenamePlanner: $this->constantRenamePlanner,
             constantFqcnRenamePlanner: $this->constantFqcnRenamePlanner,

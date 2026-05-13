@@ -425,6 +425,164 @@ final class PhpRenameNestedCallableRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures closure local variable renaming mutates direct local usages inside a method container.
+     */
+    public function testItRenamesClosureLocalVariableInsideMethod(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        $copy = $message;
+
+                        return $copy;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('$payload = $message;', $printedCode);
+        self::assertStringContainsString('return $payload;', $printedCode);
+        self::assertStringNotContainsString('$copy = $message;', $printedCode);
+    }
+
+    /**
+     * Ensures arrow-function local variable renaming mutates expression usages inside a function container.
+     */
+    public function testItRenamesArrowFunctionLocalVariableInsideFunction(): void
+    {
+        $renamer = $this->renamerWithFixture('functions.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            function map_message(string $message): void
+            {
+                $mapper = fn (): string => $message;
+            }
+            PHP);
+
+        $result = $renamer->renameArrowFunctionLocalVariableInFunction('App\\map_message', 0, 'message', 'emailMessage');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertStringContainsString('function map_message(string $message): void', $printedCode);
+        self::assertStringContainsString('fn(): string => $emailMessage', $printedCode);
+    }
+
+    /**
+     * Ensures local variable renaming follows explicit nested closure captures.
+     */
+    public function testItRenamesClosureLocalVariableCapturedByNestedClosure(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (): string {
+                        $copy = 'message';
+                        $nested = function () use ($copy): string {
+                            return $copy;
+                        };
+
+                        return $nested();
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(3, $result->plan->operations);
+        self::assertStringContainsString('$payload = \'message\';', $printedCode);
+        self::assertStringContainsString('function () use ($payload): string', $printedCode);
+        self::assertStringContainsString('return $payload;', $printedCode);
+    }
+
+    /**
+     * Ensures local variable conflicts with parameters block by default.
+     */
+    public function testItFailsClosureLocalVariableRenameWhenParameterAlreadyUsesTheNewName(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $payload): string {
+                        $copy = $payload;
+
+                        return $copy;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstPlanDiagnosticSeverity($result->plan->diagnostics));
+        self::assertStringContainsString('$copy = $payload;', $printedCode);
+        self::assertStringNotContainsString('$payload = $payload;', $printedCode);
+    }
+
+    /**
+     * Ensures nested callable local variable renames participate in transactions.
+     */
+    public function testItRenamesNestedCallableLocalVariableWithinTransaction(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (): string {
+                        $copy = 'message';
+
+                        return $copy;
+                    };
+                }
+            }
+            PHP);
+
+        $transaction = $renamer->beginTransaction();
+        $transaction->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+
+        $result = $transaction->commit();
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertSame(RenameTransactionStatus::COMMITTED, $result->status);
+        self::assertCount(1, $result->actionResults);
+        self::assertStringContainsString('$payload = \'message\';', $printedCode);
+        self::assertStringContainsString('return $payload;', $printedCode);
+    }
+
+    /**
      * Creates a renamer from one fixture.
      *
      * @param string $fileName the fixture file name

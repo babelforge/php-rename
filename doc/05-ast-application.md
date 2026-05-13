@@ -87,6 +87,11 @@ It also supports parameter renaming for:
 - `PhpParser\Node\Expr\Variable` local parameter usages in selected nested callables;
 - `PhpParser\Node\ClosureUse` explicit captures for selected nested callable parameters.
 
+It supports nested callable local variable renaming for:
+
+- `PhpParser\Node\Expr\Variable` local variable usages in selected nested callables;
+- `PhpParser\Node\ClosureUse` explicit captures for selected local variables.
+
 For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 
 It also supports namespace-level constant renaming for:
@@ -181,6 +186,8 @@ Supported parameter docblock references:
 These references are renamed on the nearest parameter parent-chain docblock containing a supported `@param` tag. This covers normal function-like declaration docblocks and closure docblocks attached to structural parents such as the assignment statement that owns the closure expression.
 
 For function FQCN rename, structured docblock references can also rename fully-qualified function references such as `@see App\old_function()`.
+
+Nested callable local variable rename does not mutate docblocks.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
