@@ -71,9 +71,18 @@ It exposes:
 - `renameArrowFunctionParameterInFile()`;
 - `planNestedCallableLocalVariableRename()`;
 - `renameNestedCallableLocalVariable()`;
+- `planClosureLocalVariableRenameInMethod()`;
 - `renameClosureLocalVariableInMethod()`;
+- `planArrowFunctionLocalVariableRenameInMethod()`;
+- `renameArrowFunctionLocalVariableInMethod()`;
+- `planClosureLocalVariableRenameInFunction()`;
+- `renameClosureLocalVariableInFunction()`;
+- `planArrowFunctionLocalVariableRenameInFunction()`;
 - `renameArrowFunctionLocalVariableInFunction()`;
+- `planClosureLocalVariableRenameInFile()`;
 - `renameClosureLocalVariableInFile()`;
+- `planArrowFunctionLocalVariableRenameInFile()`;
+- `renameArrowFunctionLocalVariableInFile()`;
 - `executeStep()`;
 - `executeStepClassRename()`;
 - `executeStepClassFqcnRename()`;
@@ -95,8 +104,11 @@ It exposes:
 - `executeStepArrowFunctionParameterRenameInFile()`;
 - `executeStepNestedCallableLocalVariableRename()`;
 - `executeStepClosureLocalVariableRenameInMethod()`;
+- `executeStepArrowFunctionLocalVariableRenameInMethod()`;
+- `executeStepClosureLocalVariableRenameInFunction()`;
 - `executeStepArrowFunctionLocalVariableRenameInFunction()`;
-- `executeStepClosureLocalVariableRenameInFile()`.
+- `executeStepClosureLocalVariableRenameInFile()`;
+- `executeStepArrowFunctionLocalVariableRenameInFile()`.
 
 `Application/RenameStepExecutor` owns the common execution path for autonomous steps. It applies a plan, aggregates diagnostics, updates the cumulative `member-graph` overlay when possible, projects the next build, and falls back to a cache-free rebuild from virtual files when projection cannot represent a request.
 
