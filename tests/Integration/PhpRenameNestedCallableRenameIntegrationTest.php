@@ -548,6 +548,107 @@ final class PhpRenameNestedCallableRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures nested callable local variable renames skip nested callable parameter shadowing.
+     */
+    public function testItDoesNotRenameNestedCallableLocalVariableShadowedParameters(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (): string {
+                        $copy = 'message';
+                        $nested = function (string $copy): string {
+                            return $copy;
+                        };
+                        $mapped = fn (string $copy): string => $copy;
+
+                        return $copy;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertStringContainsString('$payload = \'message\';', $printedCode);
+        self::assertStringContainsString('function (string $copy): string', $printedCode);
+        self::assertStringContainsString('fn(string $copy): string => $copy', $printedCode);
+        self::assertStringContainsString('return $payload;', $printedCode);
+    }
+
+    /**
+     * Ensures dynamic variable expressions that use the selected variable are renamed.
+     */
+    public function testItRenamesClosureLocalVariableUsedByDynamicVariableExpression(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (): string {
+                        $copy = 'dynamicName';
+
+                        return $$copy;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', 'payload');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertStringContainsString('$payload = \'dynamicName\';', $printedCode);
+        self::assertStringContainsString('return ${$payload};', $printedCode);
+        self::assertStringNotContainsString('return $$copy;', $printedCode);
+    }
+
+    /**
+     * Ensures superglobals cannot be renamed as nested callable local variables.
+     */
+    public function testItFailsClosureLocalVariableRenameWhenSourceOrTargetIsSuperglobal(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (): string {
+                        $copy = $_GET['message'] ?? '';
+
+                        return $copy;
+                    };
+                }
+            }
+            PHP);
+
+        $sourceResult = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, '_GET', 'request');
+        $targetResult = $renamer->renameClosureLocalVariableInMethod('App\\Mailer', 'send', 0, 'copy', '_GET');
+
+        self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstPlanDiagnosticSeverity($sourceResult->plan->diagnostics));
+        self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstPlanDiagnosticSeverity($targetResult->plan->diagnostics));
+        self::assertCount(0, $sourceResult->plan->operations);
+        self::assertCount(0, $targetResult->plan->operations);
+    }
+
+    /**
      * Ensures nested callable local variable renames participate in transactions.
      */
     public function testItRenamesNestedCallableLocalVariableWithinTransaction(): void

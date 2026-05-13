@@ -399,6 +399,8 @@ $result = $renamer->renameClosureLocalVariableInFile(
 
 The generic request API is available through `NestedCallableLocalVariableRenameRequest` and `renameNestedCallableLocalVariable()`. Local variable rename is conservative: it mutates string-named `Variable` nodes in the selected callable, explicit nested closure captures that reference the target variable, and implicit nested arrow-function captures unless the nested callable shadows the variable name with its own parameter.
 
+PHP superglobals cannot be renamed through nested callable local variable APIs. Dynamic variable expressions are handled only when the named variable inside the dynamic expression is the selected variable, for example `$$copy` can become `${$payload}` when `copy` is renamed to `payload`.
+
 Local variable rename does not update docblocks in this increment.
 
 ## Plan And Apply A Function FQCN Rename

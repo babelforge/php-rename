@@ -37,6 +37,21 @@ use PhpParser\Node\Stmt\Function_;
 final readonly class MemberGraphNestedCallableRenamePlanner implements NestedCallableRenamePlannerInterface, NestedCallableLocalVariableRenamePlannerInterface
 {
     /**
+     * @var list<string>
+     */
+    private const array SUPERGLOBALS = [
+        'GLOBALS',
+        '_COOKIE',
+        '_ENV',
+        '_FILES',
+        '_GET',
+        '_POST',
+        '_REQUEST',
+        '_SERVER',
+        '_SESSION',
+    ];
+
+    /**
      * Plans a nested callable parameter rename.
      *
      * @param NestedCallableRenameRequest $request the nested callable rename request
@@ -119,6 +134,15 @@ final readonly class MemberGraphNestedCallableRenamePlanner implements NestedCal
             $diagnostics->add(new RenameDiagnostic(
                 severity: RenameDiagnosticSeverity::WARNING,
                 message: 'The requested nested callable local variable rename is a no-op.',
+            ));
+
+            return new RenamePlan($request, $operations, $diagnostics);
+        }
+
+        if ($this->isSuperglobalName($request->oldName()) || $this->isSuperglobalName($request->newName())) {
+            $diagnostics->add(new RenameDiagnostic(
+                severity: RenameDiagnosticSeverity::ERROR,
+                message: 'Nested callable local variable rename cannot target PHP superglobals.',
             ));
 
             return new RenamePlan($request, $operations, $diagnostics);
@@ -578,6 +602,16 @@ final readonly class MemberGraphNestedCallableRenamePlanner implements NestedCal
         }
 
         return false;
+    }
+
+    /**
+     * Indicates whether one variable name is a PHP superglobal.
+     *
+     * @param string $name the variable name without "$"
+     */
+    private function isSuperglobalName(string $name): bool
+    {
+        return in_array($name, self::SUPERGLOBALS, true);
     }
 
     /**
