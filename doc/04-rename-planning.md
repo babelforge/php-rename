@@ -41,7 +41,7 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->owner('App\\Mailer');
 ```
 
-The first class rename slice expects a fully-qualified current class-like owner name and a short replacement class name. It does not move classes between namespaces.
+Short class rename receives a fully-qualified current class-like owner name and a short replacement class name. It does not move classes between namespaces.
 
 For class FQCN renaming, planning starts from the same source of truth:
 
@@ -85,7 +85,7 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->function('App\\send_mail');
 ```
 
-The first function rename slice expects a fully-qualified current function name and a short replacement function name. It does not move functions between namespaces.
+Short function rename receives a fully-qualified current function name and a short replacement function name. It does not move functions between namespaces.
 
 For function FQCN renaming, planning starts from the same source of truth:
 

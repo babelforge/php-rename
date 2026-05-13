@@ -81,6 +81,8 @@ Transactions support rollback after blocking diagnostics.
 
 Supported operations include declarations, usages, imports, selected structured docblocks, conflict diagnostics, transaction-local overlays, and transaction-neutral orchestration steps.
 
+The public API is considered stable for the supported rename matrix. New rename families can be added without changing the existing facade, transaction, step, plan, result, and diagnostic contracts.
+
 ## Documentation
 
 Full documentation starts in [doc/README.md](doc/README.md).

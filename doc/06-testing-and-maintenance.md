@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Rename Matrix](07-supported-rename-matrix.md)
 
-Tests protect behavior before broadening the API.
+Tests protect the documented behavior and public API surface.
 
 ## Validation Commands
 
@@ -46,11 +46,11 @@ The test suite covers:
 - transaction rebuild behavior for dependent rename actions.
 - transaction rollback after a later blocking diagnostic.
 
-## Testing Direction
+## Coverage Priorities
 
 Rename workflows are tested with small readable fixtures.
 
-Priority cases:
+Priority cases include:
 
 - direct class-like owner declaration;
 - direct class-like owner usage;

@@ -8,6 +8,8 @@ This documentation describes the `PhpRename` component, how to use it, and the p
 
 The package contains semantic planning and AST mutation for the supported rename matrix. Physical file writing is delegated to `php-source-registry`, while namespace-wide refactors and cross-service transactions belong to orchestration packages.
 
+The public API is stable for the documented rename matrix. Users can rely on the facade, transaction API, step API, plan/result DTOs, and diagnostics contracts described in these pages.
+
 ## Pages
 
 1. [Overview](01-overview.md)

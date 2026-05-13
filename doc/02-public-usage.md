@@ -317,7 +317,7 @@ $result = $renamer->renameFunctionParameter(
 );
 ```
 
-When `parameterIndex` is provided, `member-graph` must match both the parameter name and its declaration index. The current slice mutates parameter declarations, named arguments, local parameter usages returned by `member-graph`, and supported `@param` docblock tags.
+When `parameterIndex` is provided, `member-graph` must match both the parameter name and its declaration index. Parameter rename mutates parameter declarations, named arguments, local parameter usages returned by `member-graph`, and supported `@param` docblock tags.
 
 ## Nested Callable Parameters
 
@@ -412,7 +412,7 @@ The generic request API is available through `NestedCallableLocalVariableRenameR
 
 PHP superglobals cannot be renamed through nested callable local variable APIs. Dynamic variable expressions are handled only when the named variable inside the dynamic expression is the selected variable, for example `$$copy` can become `${$payload}` when `copy` is renamed to `payload`.
 
-Local variable rename does not update docblocks in this increment.
+Local variable rename does not update docblocks.
 
 ## Plan And Apply A Function FQCN Rename
 

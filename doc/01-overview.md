@@ -37,7 +37,7 @@ Physical file writing is delegated to `php-source-registry` through the source r
 
 - `PhpRename` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
-- plan/apply APIs for class-like owners, methods, properties, class constants, enum cases, functions, namespace-level constants, parameters, and nested callable parameters;
+- plan/apply APIs for class-like owners, methods, properties, class constants, enum cases, functions, namespace-level constants, parameters, nested callable parameters, and nested callable local variables;
 - domain DTOs for plans, operations, results, and diagnostics;
 - contracts for planning and applying rename plans;
 - `member-graph` planners that convert source-node matches into rename operations;
@@ -53,8 +53,10 @@ Namespace-wide rename is not a first-class `php-rename` operation. It is broader
 
 FQCN symbol renames can update the namespace node of a matched declaration, but they intentionally do not move files on disk. A later writer or refactor layer can consume the updated virtual files and decide whether to move paths.
 
-## Direction
+## Stable Scope
 
 `php-rename` focuses on safe symbol rename operations. Broader orchestration such as namespace-wide refactors, file moves, and multi-step clone/extract workflows belongs in a higher-level package such as `php-refactor`.
+
+The documented facade, transaction, step, plan, result, and diagnostic APIs form the stable integration surface for the supported rename matrix.
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)

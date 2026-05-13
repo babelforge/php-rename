@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Public Usage](02-public-usage.md) | [Next: Rename Planning](04-rename-planning.md)
 
-The architecture is intentionally small at this stage.
+The architecture is intentionally small and service-focused.
 
 ## Domain
 
@@ -10,6 +10,7 @@ The architecture is intentionally small at this stage.
 
 - `MethodRenameRequest`: describes the requested method rename.
 - `NestedCallableRenameRequest`: describes a closure or arrow-function parameter rename inside a method, function, or file container.
+- `NestedCallableLocalVariableRenameRequest`: describes a closure or arrow-function local variable rename inside a method, function, or file container.
 - `RenamePlan`: contains planned operations and diagnostics.
 - `RenameOperation`: targets one AST node in one virtual file.
 - `RenameResult`: contains the result of applying a plan.
@@ -175,6 +176,8 @@ Current implementations:
 - `FunctionRenameNodeApplier`;
 - `FunctionDocblockRenameApplier`.
 - `ConstantRenameNodeApplier`;
+- `ConstantDocblockRenameApplier`;
+- `LocalVariableRenameNodeApplier`;
 - `ParameterRenameNodeApplier`;
 - `ParameterDocblockRenameApplier`.
 
