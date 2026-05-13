@@ -70,12 +70,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-noobs/member-graph.git",
-                "reference": "e1e5e6e748068446e677415a35837cb7195860c8"
+                "reference": "6c2405fc8596caf152c97557b5491b02f8bce263"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/e1e5e6e748068446e677415a35837cb7195860c8",
-                "reference": "e1e5e6e748068446e677415a35837cb7195860c8",
+                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/6c2405fc8596caf152c97557b5491b02f8bce263",
+                "reference": "6c2405fc8596caf152c97557b5491b02f8bce263",
                 "shasum": ""
             },
             "require": {
@@ -130,7 +130,7 @@
                 "source": "https://github.com/php-noobs/member-graph/tree/main",
                 "issues": "https://github.com/php-noobs/member-graph/issues"
             },
-            "time": "2026-05-13T09:59:46+00:00"
+            "time": "2026-05-13T11:14:42+00:00"
         },
         {
             "name": "php-noobs/php-source-registry",
@@ -1491,16 +1491,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.24",
+            "version": "12.5.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "d75dd30597caa80e72fad2ef7904601a30ef1046"
+                "reference": "792c2980442dfce319226b88fa845b8b6de3b333"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d75dd30597caa80e72fad2ef7904601a30ef1046",
-                "reference": "d75dd30597caa80e72fad2ef7904601a30ef1046",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/792c2980442dfce319226b88fa845b8b6de3b333",
+                "reference": "792c2980442dfce319226b88fa845b8b6de3b333",
                 "shasum": ""
             },
             "require": {
@@ -1569,7 +1569,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.24"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.25"
             },
             "funding": [
                 {
@@ -1577,7 +1577,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-05-01T04:21:04+00:00"
+            "time": "2026-05-13T03:56:57+00:00"
         },
         {
             "name": "psr/container",
