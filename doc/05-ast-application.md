@@ -84,7 +84,8 @@ It also supports parameter renaming for:
 - `PhpParser\Node\Param`;
 - `PhpParser\Node\Arg` named arguments.
 - `PhpParser\Node\Expr\Variable` local parameter usages returned by `member-graph`;
-- `PhpParser\Node\Expr\Variable` local parameter usages in selected nested callables.
+- `PhpParser\Node\Expr\Variable` local parameter usages in selected nested callables;
+- `PhpParser\Node\ClosureUse` explicit captures for selected nested callable parameters.
 
 For function FQCN renaming, declaration operations also update the direct `PhpParser\Node\Stmt\Namespace_` parent when the target namespace changes. Call `Name` nodes are replaced with the replacement short name, while the containing namespace gets a `use function` import when needed. If importing would collide with an existing alias, the call falls back to `PhpParser\Node\Name\FullyQualified`.
 

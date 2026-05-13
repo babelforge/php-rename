@@ -21,6 +21,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableKind;
 use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
 use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpParser\Node;
+use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Variable;
@@ -319,13 +320,13 @@ final readonly class MemberGraphNestedCallableRenamePlanner implements NestedCal
      * @param Closure|ArrowFunction $callable      the selected callable
      * @param string                $parameterName the parameter name without "$"
      *
-     * @return list<Variable>
+     * @return list<Variable|ClosureUse>
      */
     private function localParameterUsages(Closure|ArrowFunction $callable, string $parameterName): array
     {
         $root = $callable instanceof Closure ? $callable->stmts : $callable->expr;
 
-        return $this->collectVariables($root, $parameterName);
+        return $this->collectParameterUsages($root, $parameterName);
     }
 
     /**
@@ -340,6 +341,115 @@ final readonly class MemberGraphNestedCallableRenamePlanner implements NestedCal
         $root = $callable instanceof Closure ? $callable->stmts : $callable->expr;
 
         return $this->collectVariables($root, null);
+    }
+
+    /**
+     * Collects parameter usages while following nested callable captures conservatively.
+     *
+     * @param Node|array<array-key, mixed> $nodeOrNodes   the node or node list to inspect
+     * @param string                       $parameterName the parameter name without "$"
+     *
+     * @return list<Variable|ClosureUse>
+     */
+    private function collectParameterUsages(Node|array $nodeOrNodes, string $parameterName): array
+    {
+        $nodes = $nodeOrNodes instanceof Node ? [$nodeOrNodes] : $nodeOrNodes;
+        $usages = [];
+
+        foreach ($nodes as $node) {
+            if (!$node instanceof Node) {
+                continue;
+            }
+
+            if ($node instanceof Closure) {
+                array_push($usages, ...$this->nestedClosureParameterUsages($node, $parameterName));
+
+                continue;
+            }
+
+            if ($node instanceof ArrowFunction) {
+                array_push($usages, ...$this->nestedArrowFunctionParameterUsages($node, $parameterName));
+
+                continue;
+            }
+
+            if ($node instanceof Variable && is_string($node->name) && $node->name === $parameterName) {
+                $usages[] = $node;
+            }
+
+            foreach (get_object_vars($node) as $subNode) {
+                if ($subNode instanceof Node || is_array($subNode)) {
+                    array_push($usages, ...$this->collectParameterUsages($subNode, $parameterName));
+                }
+            }
+        }
+
+        return $usages;
+    }
+
+    /**
+     * Collects captured parameter usages in one nested closure.
+     *
+     * @param Closure $closure       the nested closure node
+     * @param string  $parameterName the parameter name without "$"
+     *
+     * @return list<Variable|ClosureUse>
+     */
+    private function nestedClosureParameterUsages(Closure $closure, string $parameterName): array
+    {
+        if ($this->hasParameterNamed($closure, $parameterName)) {
+            return [];
+        }
+
+        $usages = [];
+
+        foreach ($closure->uses as $use) {
+            if (is_string($use->var->name) && $use->var->name === $parameterName) {
+                $usages[] = $use;
+            }
+        }
+
+        if ([] === $usages) {
+            return [];
+        }
+
+        array_push($usages, ...$this->collectParameterUsages($closure->stmts, $parameterName));
+
+        return $usages;
+    }
+
+    /**
+     * Collects implicitly captured parameter usages in one nested arrow function.
+     *
+     * @param ArrowFunction $arrowFunction the nested arrow-function node
+     * @param string        $parameterName the parameter name without "$"
+     *
+     * @return list<Variable|ClosureUse>
+     */
+    private function nestedArrowFunctionParameterUsages(ArrowFunction $arrowFunction, string $parameterName): array
+    {
+        if ($this->hasParameterNamed($arrowFunction, $parameterName)) {
+            return [];
+        }
+
+        return $this->collectParameterUsages($arrowFunction->expr, $parameterName);
+    }
+
+    /**
+     * Indicates whether one function-like node declares a parameter with the requested name.
+     *
+     * @param Closure|ArrowFunction $callable      the callable node to inspect
+     * @param string                $parameterName the parameter name without "$"
+     */
+    private function hasParameterNamed(Closure|ArrowFunction $callable, string $parameterName): bool
+    {
+        foreach ($callable->getParams() as $parameter) {
+            if ($this->parameterName($parameter) === $parameterName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

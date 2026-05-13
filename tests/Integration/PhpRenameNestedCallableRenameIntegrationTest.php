@@ -144,6 +144,169 @@ final class PhpRenameNestedCallableRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures a missing nested callable index creates a warning plan without mutation.
+     */
+    public function testItReportsMissingNestedCallableIndexWithoutMutation(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        return $message;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureParameterInMethod('App\\Mailer', 'send', 4, 'message', 'emailMessage');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->plan->operations);
+        self::assertSame(RenameDiagnosticSeverity::WARNING, $this->firstPlanDiagnosticSeverity($result->plan->diagnostics));
+        self::assertStringContainsString('function (string $message): string', $printedCode);
+        self::assertStringNotContainsString('function (string $emailMessage): string', $printedCode);
+    }
+
+    /**
+     * Ensures parameter index must match together with the parameter name.
+     */
+    public function testItRequiresParameterIndexToMatchWhenProvided(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message, string $transport): string {
+                        return $message;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureParameterInMethod('App\\Mailer', 'send', 0, 'message', 'emailMessage', 1);
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->plan->operations);
+        self::assertSame(RenameDiagnosticSeverity::WARNING, $this->firstPlanDiagnosticSeverity($result->plan->diagnostics));
+        self::assertStringContainsString('function (string $message, string $transport): string', $printedCode);
+        self::assertStringNotContainsString('function (string $emailMessage, string $transport): string', $printedCode);
+    }
+
+    /**
+     * Ensures nested closure captures of the selected parameter are renamed.
+     */
+    public function testItRenamesNestedClosureCapturedParameterUsages(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        $nested = function () use ($message): string {
+                            return $message;
+                        };
+
+                        return $nested();
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureParameterInMethod('App\\Mailer', 'send', 0, 'message', 'emailMessage');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(3, $result->plan->operations);
+        self::assertStringContainsString('function (string $emailMessage): string', $printedCode);
+        self::assertStringContainsString('function () use ($emailMessage): string', $printedCode);
+        self::assertStringContainsString('return $emailMessage;', $printedCode);
+        self::assertStringNotContainsString('use ($message)', $printedCode);
+    }
+
+    /**
+     * Ensures nested arrow-function implicit captures of the selected parameter are renamed.
+     */
+    public function testItRenamesNestedArrowFunctionImplicitCapturedParameterUsages(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        $nested = fn (): string => $message;
+
+                        return $nested();
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureParameterInMethod('App\\Mailer', 'send', 0, 'message', 'emailMessage');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertStringContainsString('function (string $emailMessage): string', $printedCode);
+        self::assertStringContainsString('fn(): string => $emailMessage', $printedCode);
+        self::assertStringNotContainsString('fn(): string => $message', $printedCode);
+    }
+
+    /**
+     * Ensures nested callable parameters that shadow the selected parameter are not renamed.
+     */
+    public function testItDoesNotRenameNestedCallableShadowedParameters(): void
+    {
+        $renamer = $this->renamerWithFixture('Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        $nested = function (string $message): string {
+                            return $message;
+                        };
+                        $mapped = fn (string $message): string => $message;
+
+                        return $message;
+                    };
+                }
+            }
+            PHP);
+
+        $result = $renamer->renameClosureParameterInMethod('App\\Mailer', 'send', 0, 'message', 'emailMessage');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(2, $result->plan->operations);
+        self::assertStringContainsString('function (string $emailMessage): string', $printedCode);
+        self::assertStringContainsString('function (string $message): string', $printedCode);
+        self::assertStringContainsString('fn(string $message): string => $message', $printedCode);
+        self::assertStringContainsString('return $emailMessage;', $printedCode);
+    }
+
+    /**
      * Ensures nested callable parameter conflicts fail by default and keep virtual files unchanged.
      */
     public function testItFailsNestedCallableParameterRenameWhenLocalVariableAlreadyUsesTheNewName(): void
@@ -154,6 +317,56 @@ final class PhpRenameNestedCallableRenameIntegrationTest extends TestCase
         $printedCode = $this->printedCode($result->virtualFiles);
 
         self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstPlanDiagnosticSeverity($result->plan->diagnostics));
+        self::assertStringContainsString('function (string $message): string', $printedCode);
+        self::assertStringContainsString('$existing = $message;', $printedCode);
+        self::assertStringNotContainsString('function (string $existing): string', $printedCode);
+    }
+
+    /**
+     * Ensures a blocked nested callable parameter step keeps the previous context unchanged.
+     */
+    public function testItDoesNotApplyBlockedNestedCallableParameterRenameStep(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        file_put_contents($srcDirectory.'/Mailer.php', <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function send(): void
+                {
+                    $handler = function (string $message): string {
+                        $existing = $message;
+
+                        return $existing;
+                    };
+                }
+            }
+            PHP);
+
+        $build = MemberDependencyGraphFactory::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+        $renamer = PhpRename::fromBuild($build);
+
+        $stepResult = $renamer->executeStepClosureParameterRenameInMethod(
+            context: RenameStepContext::fromBuild($build),
+            className: 'App\\Mailer',
+            methodName: 'send',
+            closureIndex: 0,
+            parameterName: 'message',
+            newParameterName: 'existing',
+        );
+        $printedCode = $this->printedCode($stepResult->context->currentBuild->virtualFiles);
+
+        self::assertFalse($stepResult->applied);
+        self::assertSame(RenameDiagnosticSeverity::ERROR, $this->firstPlanDiagnosticSeverity($stepResult->diagnostics));
         self::assertStringContainsString('function (string $message): string', $printedCode);
         self::assertStringContainsString('$existing = $message;', $printedCode);
         self::assertStringNotContainsString('function (string $existing): string', $printedCode);

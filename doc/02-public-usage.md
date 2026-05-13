@@ -367,7 +367,7 @@ $result = $renamer->renameArrowFunctionParameterInFile(
 
 The generic request API is available through `NestedCallableRenameRequest` and `renameNestedCallableParameter()`. The step API mirrors the same operations with `executeStepClosureParameterRenameInMethod()`, `executeStepArrowFunctionParameterRenameInFunction()`, and the other container variants.
 
-Nested callable parameter rename mutates the selected callable parameter declaration, local variable usages inside the selected callable body, and supported `@param` docblocks attached to the callable or one of its structural parents.
+Nested callable parameter rename mutates the selected callable parameter declaration, local variable usages inside the selected callable body, explicit nested closure captures such as `use ($message)`, implicit nested arrow-function captures, and supported `@param` docblocks attached to the callable or one of its structural parents. Nested callables that declare their own parameter with the same name are treated as shadowed scopes and are not renamed.
 
 ## Plan And Apply A Function FQCN Rename
 

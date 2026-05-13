@@ -11,6 +11,7 @@ use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
 use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Param;
@@ -54,6 +55,12 @@ final readonly class ParameterRenameNodeApplier implements RenameNodeApplierInte
 
         if ($node instanceof Variable && is_string($node->name)) {
             $node->name = $operation->newName;
+
+            return true;
+        }
+
+        if ($node instanceof ClosureUse && is_string($node->var->name)) {
+            $node->var->name = $operation->newName;
 
             return true;
         }
