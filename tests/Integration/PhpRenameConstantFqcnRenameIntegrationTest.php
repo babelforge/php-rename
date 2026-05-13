@@ -71,6 +71,48 @@ final class PhpRenameConstantFqcnRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures constant FQCN renaming preserves explicit aliases from grouped imports.
+     */
+    public function testItPreservesExplicitAliasWhenConstantFqcnRenameUpdatesGroupedImport(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App/Config', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+
+        $this->writeConstantsFile($srcDirectory.'/App/Config/constants.php');
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use const App\Config\{ENABLED as LEGACY_ENABLED};
+
+            final class Consumer
+            {
+                public function enabled(): bool
+                {
+                    return LEGACY_ENABLED;
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameConstantFqcn('App\\Config\\ENABLED', 'Tools\\ACTIVE');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('use const Tools\\ACTIVE as LEGACY_ENABLED;', $printedCode);
+        self::assertStringContainsString('return LEGACY_ENABLED;', $printedCode);
+        self::assertStringNotContainsString('use const App\\Config\\{Tools\\ACTIVE', $printedCode);
+    }
+
+    /**
      * Writes the constant fixture targeted by the FQCN rename.
      *
      * @param string $filePath the file path

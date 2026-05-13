@@ -120,6 +120,49 @@ final class PhpRenameClassFqcnRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures class FQCN renaming preserves explicit aliases from grouped imports.
+     */
+    public function testItPreservesExplicitAliasWhenClassFqcnRenameUpdatesGroupedImport(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+
+        $this->writeMailerFile($srcDirectory.'/App/Mailer.php');
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use App\{Mailer as LegacyMailer};
+
+            final class Consumer
+            {
+                public function create(): LegacyMailer
+                {
+                    return new LegacyMailer();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameClassFqcn('App\\Mailer', 'Tools\\Sender');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('use Tools\\Sender as LegacyMailer;', $printedCode);
+        self::assertStringContainsString('public function create(): LegacyMailer', $printedCode);
+        self::assertStringContainsString('return new LegacyMailer();', $printedCode);
+        self::assertStringNotContainsString('use App\\{Tools\\Sender', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path

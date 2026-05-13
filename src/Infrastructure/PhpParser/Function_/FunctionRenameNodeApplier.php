@@ -254,16 +254,46 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
                     continue;
                 }
 
-                $use->name = new Name(ltrim($newName, '\\'), $use->name->getAttributes());
-                $use->alias = null;
-
-                return $newShortName;
+                return $this->updateExistingFunctionUseImport($namespace, $importStatement, $use, $newName);
             }
         }
 
         $this->addFunctionUseImport($namespace, $newName);
 
         return $newShortName;
+    }
+
+    /**
+     * Updates an existing function import when it can be safely rewritten.
+     *
+     * @param Namespace_    $namespace the namespace containing the import
+     * @param Use_|GroupUse $statement the import statement
+     * @param UseItem       $use       the import item to update
+     * @param string        $newName   the replacement fully-qualified function name
+     */
+    private function updateExistingFunctionUseImport(
+        Namespace_ $namespace,
+        Use_|GroupUse $statement,
+        UseItem $use,
+        string $newName,
+    ): string {
+        $alias = $use->alias?->toString();
+
+        if (!$statement instanceof GroupUse) {
+            $use->name = new Name(ltrim($newName, '\\'), $use->name->getAttributes());
+
+            return $alias ?? $this->shortName($newName);
+        }
+
+        if ($statement->prefix->toString() === $this->namespaceName($newName)) {
+            $use->name = new Name($this->shortName($newName), $use->name->getAttributes());
+
+            return $alias ?? $this->shortName($newName);
+        }
+
+        $this->addFunctionUseImportWithAlias($namespace, $newName, $alias);
+
+        return $alias ?? $this->shortName($newName);
     }
 
     /**
@@ -274,7 +304,20 @@ final readonly class FunctionRenameNodeApplier implements RenameNodeApplierInter
      */
     private function addFunctionUseImport(Namespace_ $namespace, string $newName): void
     {
+        $this->addFunctionUseImportWithAlias($namespace, $newName, null);
+    }
+
+    /**
+     * Adds a function import with an optional explicit alias.
+     *
+     * @param Namespace_  $namespace the namespace to update
+     * @param string      $newName   the fully-qualified function name to import
+     * @param string|null $alias     the optional explicit import alias
+     */
+    private function addFunctionUseImportWithAlias(Namespace_ $namespace, string $newName, ?string $alias): void
+    {
         $useItem = new UseItem(new Name(ltrim($newName, '\\')));
+        $useItem->alias = null === $alias ? null : new Identifier($alias);
         $use = new Use_([$useItem], Use_::TYPE_FUNCTION);
         $useItem->setAttribute('parent', $use);
         $use->setAttribute('parent', $namespace);

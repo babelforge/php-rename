@@ -71,6 +71,48 @@ final class PhpRenameFunctionFqcnRenameIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures function FQCN renaming preserves explicit aliases from grouped imports.
+     */
+    public function testItPreservesExplicitAliasWhenFunctionFqcnRenameUpdatesGroupedImport(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory.'/App', 0o777, true);
+        mkdir($srcDirectory.'/Controller', 0o777, true);
+
+        $this->writeFunctionsFile($srcDirectory.'/App/functions.php');
+        file_put_contents($srcDirectory.'/Controller/Consumer.php', <<<'PHP'
+            <?php
+
+            namespace Controller;
+
+            use function App\{send_mail as legacy_send_mail};
+
+            final class Consumer
+            {
+                public function run(): string
+                {
+                    return legacy_send_mail();
+                }
+            }
+            PHP);
+
+        $renamer = PhpRename::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $renamer->renameFunctionFqcn('App\\send_mail', 'Tools\\deliver_mail');
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('use function Tools\\deliver_mail as legacy_send_mail;', $printedCode);
+        self::assertStringContainsString('return legacy_send_mail();', $printedCode);
+        self::assertStringNotContainsString('use function App\\{Tools\\deliver_mail', $printedCode);
+    }
+
+    /**
      * Writes the function fixture targeted by the FQCN rename.
      *
      * @param string $filePath the file path
