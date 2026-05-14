@@ -79,7 +79,7 @@ Transactions support rollback after blocking diagnostics.
 - closure and arrow-function parameter renames inside method, function, or file containers;
 - selected closure and arrow-function local variable renames inside method, function, or file containers.
 
-Supported operations include declarations, usages, imports, selected structured docblocks, conflict diagnostics, transaction-local overlays, and transaction-neutral orchestration steps.
+Supported operations include declarations, usages, imports, selected structured docblocks, structured PHP attribute references, conflict diagnostics, transaction-local overlays, and transaction-neutral orchestration steps.
 
 The public API is considered stable for the supported rename matrix. New rename families can be added without changing the existing facade, transaction, step, plan, result, and diagnostic contracts.
 

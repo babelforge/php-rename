@@ -191,6 +191,19 @@ Nested callable local variable rename does not mutate docblocks.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
+## PHP Attributes
+
+Structured PHP attribute references are renamed when `member-graph` returns them through the normal semantic locator APIs.
+
+Supported attribute references include:
+
+- class-like `::class` references through owner usage `Name` nodes;
+- class constants and enum cases through `ClassConstFetch` nodes;
+- namespace-level constants through `ConstFetch` nodes;
+- function references, including first-class callable syntax, through `FuncCall` nodes.
+
+Attribute string arguments are not rewritten. Dynamic attribute expressions are not treated as safe rename targets unless `member-graph` exposes them as ordinary resolved usages.
+
 ## Physical Writing
 
 Physical writing is delegated to the source registry exposed by the final `member-graph` build.
