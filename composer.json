@@ -16,11 +16,11 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/babelforge/member-graph"
+            "url": "https://github.com/babelforge/member-graph.git"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/babelforge/php-source-registry"
+            "url": "https://github.com/babelforge/php-source-registry.git"
         }
     ],
     "require": {
