@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/babelforge/member-graph.git",
-                "reference": "5f213323625a38d134f095476acd53f6a71eec16"
+                "reference": "ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/babelforge/member-graph/zipball/5f213323625a38d134f095476acd53f6a71eec16",
-                "reference": "5f213323625a38d134f095476acd53f6a71eec16",
+                "url": "https://api.github.com/repos/babelforge/member-graph/zipball/ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1",
+                "reference": "ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1",
                 "shasum": ""
             },
             "require": {
@@ -72,7 +72,7 @@
                 "source": "https://github.com/babelforge/member-graph/tree/main",
                 "issues": "https://github.com/babelforge/member-graph/issues"
             },
-            "time": "2026-05-24T08:40:39+00:00"
+            "time": "2026-05-24T15:11:30+00:00"
         },
         {
             "name": "babelforge/php-source-registry",
@@ -80,12 +80,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/babelforge/php-source-registry.git",
-                "reference": "2a457f656f963dc61f7dd6844f6a2ee15a578b58"
+                "reference": "424f679956726a3c5987771b002b00de1af0b63e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/babelforge/php-source-registry/zipball/2a457f656f963dc61f7dd6844f6a2ee15a578b58",
-                "reference": "2a457f656f963dc61f7dd6844f6a2ee15a578b58",
+                "url": "https://api.github.com/repos/babelforge/php-source-registry/zipball/424f679956726a3c5987771b002b00de1af0b63e",
+                "reference": "424f679956726a3c5987771b002b00de1af0b63e",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +136,7 @@
                 "source": "https://github.com/babelforge/php-source-registry/tree/main",
                 "issues": "https://github.com/babelforge/php-source-registry/issues"
             },
-            "time": "2026-05-24T08:37:53+00:00"
+            "time": "2026-05-24T15:19:21+00:00"
         },
         {
             "name": "nikic/php-parser",
