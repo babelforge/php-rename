@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Domain\Rename\Request;
+namespace BabelForge\PhpRename\Tests\Domain\Rename\Request;
 
-use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
 use PHPUnit\Framework\TestCase;
 
 /**

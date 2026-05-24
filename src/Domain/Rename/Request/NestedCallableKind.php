@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Request;
+namespace BabelForge\PhpRename\Domain\Rename\Request;
 
 /**
  * Identifies the nested callable kind to rename within.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Plan;
+namespace BabelForge\PhpRename\Domain\Rename\Plan;
 
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Request\RenameRequestInterface;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
+use BabelForge\PhpRename\Domain\Rename\Request\RenameRequestInterface;
 
 /**
  * Describes all AST operations and diagnostics for a rename request.

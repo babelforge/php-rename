@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Transaction;
+namespace BabelForge\PhpRename\Domain\Rename\Transaction;
 
 /**
  * Enumerates rename transaction statuses.

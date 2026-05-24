@@ -2,35 +2,35 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\PhpParser;
+namespace BabelForge\PhpRename\Infrastructure\PhpParser;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Class_\ClassRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\ClassConstant\ClassConstantRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Constant\ConstantRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassConstantDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ClassDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ConstantDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\FunctionDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\MethodDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\ParameterDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Docblock\PropertyDocblockRenameApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Function_\FunctionRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Method\MethodRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Parameter\ParameterRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Property\PropertyRenameNodeApplier;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Variable\LocalVariableRenameNodeApplier;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\PhpRename\Application\Contract\RenamePlanApplierInterface;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperation;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Application\RenameApplicationContext;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Application\RenameMetadataApplierInterface;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Application\RenameNodeApplierInterface;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Class_\ClassRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\ClassConstant\ClassConstantRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Constant\ConstantRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\ClassConstantDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\ClassDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\ConstantDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\FunctionDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\MethodDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\ParameterDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Docblock\PropertyDocblockRenameApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Function_\FunctionRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Method\MethodRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Parameter\ParameterRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Property\PropertyRenameNodeApplier;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Variable\LocalVariableRenameNodeApplier;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 
 /**
  * Applies rename plans to PHPParser AST nodes stored in virtual files.

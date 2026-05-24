@@ -1,31 +1,31 @@
 {
-    "name": "php-noobs/php-rename",
+    "name": "babelforge/php-rename",
     "type": "library",
     "license": "MIT",
     "description": "PHP refactoring library for safe class and member renaming.",
     "autoload": {
         "psr-4": {
-            "PhpNoobs\\PhpRename\\": "src/"
+            "BabelForge\\PhpRename\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "PhpNoobs\\PhpRename\\Tests\\": "tests/"
+            "BabelForge\\PhpRename\\Tests\\": "tests/"
         }
     },
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/php-noobs/member-graph"
+            "url": "https://github.com/babelforge/member-graph"
         },
         {
             "type": "vcs",
-            "url": "https://github.com/php-noobs/php-source-registry"
+            "url": "https://github.com/babelforge/php-source-registry"
         }
     ],
     "require": {
         "php": ">=8.4",
-        "php-noobs/member-graph": "dev-main",
+        "babelforge/member-graph": "dev-main",
         "nikic/php-parser": "^5.7",
         "psr/log": "^3.0"
     },

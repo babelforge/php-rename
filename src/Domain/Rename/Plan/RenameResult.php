@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Plan;
+namespace BabelForge\PhpRename\Domain\Rename\Plan;
 
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 
 /**
  * Describes the outcome of applying a rename plan.

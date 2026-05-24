@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Application;
+namespace BabelForge\PhpRename\Application;
 
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
 
 /**
  * Exposes nested callable parameter rename operations on transactions.

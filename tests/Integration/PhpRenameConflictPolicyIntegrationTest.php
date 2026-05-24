@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Integration;
+namespace BabelForge\PhpRename\Tests\Integration;
 
-use PhpNoobs\PhpRename\Application\PhpRename;
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PHPUnit\Framework\TestCase;
 
 /**

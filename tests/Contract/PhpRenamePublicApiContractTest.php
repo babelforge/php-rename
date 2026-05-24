@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Contract;
+namespace BabelForge\PhpRename\Tests\Contract;
 
-use PhpNoobs\PhpRename\Application\PhpRename;
-use PhpNoobs\PhpRename\Application\PhpRenameTransaction;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepResult;
-use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
-use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Application\PhpRenameTransaction;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepResult;
+use BabelForge\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
+use BabelForge\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 use PHPUnit\Framework\TestCase;
 
 /**

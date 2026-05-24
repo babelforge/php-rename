@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\PhpParser\Transaction;
+namespace BabelForge\PhpRename\Infrastructure\PhpParser\Transaction;
 
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PhpParser\Node;
 
 /**

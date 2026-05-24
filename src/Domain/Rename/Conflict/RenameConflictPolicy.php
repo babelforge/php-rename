@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Conflict;
+namespace BabelForge\PhpRename\Domain\Rename\Conflict;
 
 /**
  * Defines how rename conflict facts must be handled during planning.

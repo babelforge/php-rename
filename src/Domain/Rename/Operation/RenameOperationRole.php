@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Operation;
+namespace BabelForge\PhpRename\Domain\Rename\Operation;
 
 /**
  * Enumerates why an AST node is part of a rename plan.

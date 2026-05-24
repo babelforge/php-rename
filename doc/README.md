@@ -4,7 +4,7 @@ Navigation: [Next: Overview](01-overview.md)
 
 This documentation describes the `PhpRename` component, how to use it, and the package boundaries that govern its behavior.
 
-`PhpRename` is a PHP refactoring library focused on safe symbol renaming. It consumes `php-noobs/member-graph` for semantic dependency facts and owns rename planning plus AST mutation.
+`PhpRename` is a PHP refactoring library focused on safe symbol renaming. It consumes `babelforge/member-graph` for semantic dependency facts and owns rename planning plus AST mutation.
 
 The package contains semantic planning and AST mutation for the supported rename matrix. Physical file writing is delegated to `php-source-registry`, while namespace-wide refactors and cross-service transactions belong to orchestration packages.
 
@@ -22,9 +22,9 @@ The public API is stable for the documented rename matrix. Users can rely on the
 
 ## External Dependencies
 
-`PhpRename` consumes `php-noobs/member-graph` to build and query member-level dependency facts.
+`PhpRename` consumes `babelforge/member-graph` to build and query member-level dependency facts.
 
-`member-graph` depends on `php-noobs/php-source-registry`, which provides virtual PHP source files and PHPParser AST access.
+`member-graph` depends on `babelforge/php-source-registry`, which provides virtual PHP source files and PHPParser AST access.
 
 `PhpRename` does not duplicate member graph logic. It uses upstream semantic facts to decide what can be renamed safely.
 

@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
+namespace BabelForge\PhpRename\Infrastructure\MemberGraph\Planner;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
-use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
-use PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
+use BabelForge\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperation;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperationRole;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use BabelForge\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameConflictGuard;
+use BabelForge\PhpRename\Infrastructure\MemberGraph\Guard\MemberGraphRenameNoOpGuard;
 
 /**
  * Plans parameter renames from `member-graph` semantic facts.

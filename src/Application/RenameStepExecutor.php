@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Application;
+namespace BabelForge\PhpRename\Application;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
-use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphProjectedBuildFactory;
-use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ClassRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ConstantRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\MethodRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\RenameRequestInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepResult;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
+use BabelForge\MemberGraph\Application\Build\Projection\MemberGraphProjectedBuildFactory;
+use BabelForge\PhpRename\Application\Contract\RenamePlanApplierInterface;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Domain\Rename\Request\ClassConstantRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ClassFqcnRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ClassRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ConstantFqcnRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ConstantRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\EnumCaseRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\FunctionFqcnRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\FunctionRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\MethodRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\ParameterRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\PropertyRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\RenameRequestInterface;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepResult;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 
 /**
  * Executes one rename plan against an orchestrable step context.

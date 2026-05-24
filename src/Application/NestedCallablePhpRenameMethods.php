@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Application;
+namespace BabelForge\PhpRename\Application;
 
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableContainerKind;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableKind;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepResult;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableContainerKind;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableKind;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepResult;
 
 /**
  * Exposes nested callable parameter rename operations on the public facade.

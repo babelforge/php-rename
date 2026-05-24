@@ -9,7 +9,7 @@ The public API is small and composable.
 Rename methods accept an optional conflict policy:
 
 ```php
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
 
 $result = $renamer->renameMethod(
     className: App\Service\UserMailer::class,
@@ -46,7 +46,7 @@ $result = $renamer->renameMethod(
 Use this mode when `PhpRename` builds its own `member-graph` input:
 
 ```php
-use PhpNoobs\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Application\PhpRename;
 
 $renamer = PhpRename::fromDirectory(
     directories: [$projectPath . '/src'],
@@ -59,7 +59,7 @@ $renamer = PhpRename::fromDirectory(
 Use this mode when another tool already built a `member-graph` result:
 
 ```php
-use PhpNoobs\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Application\PhpRename;
 
 $renamer = PhpRename::fromBuild($build);
 ```
@@ -104,8 +104,8 @@ $rollbackResult = $transaction->rollback();
 Use the step API when an external orchestrator owns the broader workflow and wants to call `php-rename` as one autonomous service:
 
 ```php
-use PhpNoobs\PhpRename\Application\PhpRename;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
 
 $renamer = PhpRename::fromBuild($build);
 $context = RenameStepContext::fromBuild($build);

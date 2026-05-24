@@ -4,8 +4,140 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41251207c40a9afc3e8c2d346b2d737d",
+    "content-hash": "462836c9eab63d10e9b322984467f25e",
     "packages": [
+        {
+            "name": "babelforge/member-graph",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/babelforge/member-graph.git",
+                "reference": "5f213323625a38d134f095476acd53f6a71eec16"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/babelforge/member-graph/zipball/5f213323625a38d134f095476acd53f6a71eec16",
+                "reference": "5f213323625a38d134f095476acd53f6a71eec16",
+                "shasum": ""
+            },
+            "require": {
+                "babelforge/php-source-registry": "dev-main",
+                "nikic/php-parser": "^5.7",
+                "php": ">=8.4",
+                "phpstan/phpdoc-parser": "^2.3",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^12.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BabelForge\\MemberGraph\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "BabelForge\\MemberGraph\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "cs": [
+                    "php-cs-fixer fix --dry-run --diff"
+                ],
+                "cs-fix": [
+                    "php-cs-fixer fix"
+                ],
+                "test": [
+                    "phpunit"
+                ],
+                "analyse": [
+                    "phpstan analyse"
+                ],
+                "qa": [
+                    "@cs",
+                    "@analyse",
+                    "@test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "source": "https://github.com/babelforge/member-graph/tree/main",
+                "issues": "https://github.com/babelforge/member-graph/issues"
+            },
+            "time": "2026-05-24T08:40:39+00:00"
+        },
+        {
+            "name": "babelforge/php-source-registry",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/babelforge/php-source-registry.git",
+                "reference": "2a457f656f963dc61f7dd6844f6a2ee15a578b58"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/babelforge/php-source-registry/zipball/2a457f656f963dc61f7dd6844f6a2ee15a578b58",
+                "reference": "2a457f656f963dc61f7dd6844f6a2ee15a578b58",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/php-parser": "^5.7",
+                "php": ">=8.4",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpunit/phpunit": "^12.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "BabelForge\\PhpSource\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "BabelForge\\PhpSource\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "cs": [
+                    "php-cs-fixer fix --dry-run --diff"
+                ],
+                "cs-fix": [
+                    "php-cs-fixer fix"
+                ],
+                "test": [
+                    "phpunit"
+                ],
+                "analyse": [
+                    "phpstan analyse"
+                ],
+                "qa": [
+                    "@cs",
+                    "@analyse",
+                    "@test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "support": {
+                "source": "https://github.com/babelforge/php-source-registry/tree/main",
+                "issues": "https://github.com/babelforge/php-source-registry/issues"
+            },
+            "time": "2026-05-24T08:37:53+00:00"
+        },
         {
             "name": "nikic/php-parser",
             "version": "v5.7.0",
@@ -63,138 +195,6 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.7.0"
             },
             "time": "2025-12-06T11:56:16+00:00"
-        },
-        {
-            "name": "php-noobs/member-graph",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-noobs/member-graph.git",
-                "reference": "6c2405fc8596caf152c97557b5491b02f8bce263"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/member-graph/zipball/6c2405fc8596caf152c97557b5491b02f8bce263",
-                "reference": "6c2405fc8596caf152c97557b5491b02f8bce263",
-                "shasum": ""
-            },
-            "require": {
-                "nikic/php-parser": "^5.7",
-                "php": ">=8.4",
-                "php-noobs/php-source-registry": "dev-main",
-                "phpstan/phpdoc-parser": "^2.3",
-                "psr/log": "^3.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.95",
-                "phpstan/phpstan": "^2.1",
-                "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpstan/phpstan-strict-rules": "^2.0",
-                "phpunit/phpunit": "^12.5"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "PhpNoobs\\MemberGraph\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "PhpNoobs\\MemberGraph\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "cs": [
-                    "php-cs-fixer fix --dry-run --diff"
-                ],
-                "cs-fix": [
-                    "php-cs-fixer fix"
-                ],
-                "test": [
-                    "phpunit"
-                ],
-                "analyse": [
-                    "phpstan analyse"
-                ],
-                "qa": [
-                    "@cs",
-                    "@analyse",
-                    "@test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "support": {
-                "source": "https://github.com/php-noobs/member-graph/tree/main",
-                "issues": "https://github.com/php-noobs/member-graph/issues"
-            },
-            "time": "2026-05-13T11:14:42+00:00"
-        },
-        {
-            "name": "php-noobs/php-source-registry",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-noobs/php-source-registry.git",
-                "reference": "d178e89e424f1f04f0a869eba9b80e9809c98acd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-noobs/php-source-registry/zipball/d178e89e424f1f04f0a869eba9b80e9809c98acd",
-                "reference": "d178e89e424f1f04f0a869eba9b80e9809c98acd",
-                "shasum": ""
-            },
-            "require": {
-                "nikic/php-parser": "^5.7",
-                "php": ">=8.4",
-                "psr/log": "^3.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.95",
-                "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpunit/phpunit": "^12.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "PhpNoobs\\PhpSource\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "PhpNoobs\\PhpSource\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "cs": [
-                    "php-cs-fixer fix --dry-run --diff"
-                ],
-                "cs-fix": [
-                    "php-cs-fixer fix"
-                ],
-                "test": [
-                    "phpunit"
-                ],
-                "analyse": [
-                    "phpstan analyse"
-                ],
-                "qa": [
-                    "@cs",
-                    "@analyse",
-                    "@test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "support": {
-                "source": "https://github.com/php-noobs/php-source-registry/tree/main",
-                "issues": "https://github.com/php-noobs/php-source-registry/issues"
-            },
-            "time": "2026-05-12T11:09:38+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -4633,7 +4633,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "php-noobs/member-graph": 20
+        "babelforge/member-graph": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

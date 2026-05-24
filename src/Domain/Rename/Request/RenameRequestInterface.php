@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Request;
+namespace BabelForge\PhpRename\Domain\Rename\Request;
 
 /**
  * Describes a rename request that can be represented by a rename plan.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Domain\Rename\Diagnostic;
+namespace BabelForge\PhpRename\Tests\Domain\Rename\Diagnostic;
 
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
 use PHPUnit\Framework\TestCase;
 
 /**

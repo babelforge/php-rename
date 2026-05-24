@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Request;
+namespace BabelForge\PhpRename\Domain\Rename\Request;
 
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Validation\RenameInputValidator;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Validation\RenameInputValidator;
 
 /**
  * Describes a property rename intent anchored to a class name.

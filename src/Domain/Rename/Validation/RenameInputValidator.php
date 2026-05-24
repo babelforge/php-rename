@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Validation;
+namespace BabelForge\PhpRename\Domain\Rename\Validation;
 
 /**
  * Validates rename input names before planning.

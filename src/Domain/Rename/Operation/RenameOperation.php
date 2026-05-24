@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Operation;
+namespace BabelForge\PhpRename\Domain\Rename\Operation;
 
-use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PhpParser\Node;
 
 /**

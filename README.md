@@ -1,8 +1,8 @@
 # PHP Rename
 
-`php-noobs/php-rename` is a semantic PHP symbol rename library.
+`babelforge/php-rename` is a semantic PHP symbol rename library.
 
-It uses `php-noobs/member-graph` to locate declarations and usages, then mutates PHPParser AST nodes stored in virtual PHP source files. This keeps rename operations semantic and avoids text-based replacements.
+It uses `babelforge/member-graph` to locate declarations and usages, then mutates PHPParser AST nodes stored in virtual PHP source files. This keeps rename operations semantic and avoids text-based replacements.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ It uses `php-noobs/member-graph` to locate declarations and usages, then mutates
 ## Installation
 
 ```bash
-composer require php-noobs/php-rename
+composer require babelforge/php-rename
 ```
 
 ## Basic Usage
@@ -20,7 +20,7 @@ composer require php-noobs/php-rename
 Create a renamer from source directories:
 
 ```php
-use PhpNoobs\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Application\PhpRename;
 
 $renamer = PhpRename::fromDirectory(
     directories: [__DIR__.'/src'],

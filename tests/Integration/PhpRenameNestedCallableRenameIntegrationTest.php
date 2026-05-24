@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Integration;
+namespace BabelForge\PhpRename\Tests\Integration;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\PhpRename\Application\PhpRename;
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
-use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\PhpRename\Application\PhpRename;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PHPUnit\Framework\TestCase;
 
 /**

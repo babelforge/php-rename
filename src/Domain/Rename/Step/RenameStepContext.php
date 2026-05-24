@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Step;
+namespace BabelForge\PhpRename\Domain\Rename\Step;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
 
 /**
  * Carries the semantic state needed to execute one orchestrable rename step.

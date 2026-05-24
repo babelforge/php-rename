@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Tests\Integration;
+namespace BabelForge\PhpRename\Tests\Integration;
 
-use PhpNoobs\PhpRename\Application\PhpRename;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpRename\Application\PhpRename;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PHPUnit\Framework\TestCase;
 
 /**

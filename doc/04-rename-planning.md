@@ -24,7 +24,7 @@ Planning must not mutate virtual files.
 For method renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->method('App\\Mailer', 'send');
@@ -35,7 +35,7 @@ The returned `VirtualPhpSourceFileNodeMatchCollection` is converted to rename op
 For class renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->owner('App\\Mailer');
@@ -46,7 +46,7 @@ Short class rename receives a fully-qualified current class-like owner name and 
 For class FQCN renaming, planning starts from the same source of truth:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->owner('App\\Mailer');
@@ -57,7 +57,7 @@ The difference is the replacement contract: `renameClassFqcn()` receives a fully
 For property renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->property('App\\Mailer', 'transport');
@@ -68,7 +68,7 @@ The same source-of-truth rule applies.
 For class-constant renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->classConstant('App\\Mailer', 'DEFAULT_TRANSPORT');
@@ -79,7 +79,7 @@ The same source-of-truth rule applies.
 For function renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->function('App\\send_mail');
@@ -90,7 +90,7 @@ Short function rename receives a fully-qualified current function name and a sho
 For function FQCN renaming, planning starts from the same source of truth:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->function('App\\send_mail');
@@ -101,7 +101,7 @@ The difference is the replacement contract: `renameFunctionFqcn()` receives a fu
 For namespace-level constant renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->constant('App\\Config\\ENABLED');
@@ -112,7 +112,7 @@ Short constant rename receives a fully-qualified current constant name and a sho
 For parameter renaming, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->parameter('App\\Mailer', 'send', 'message', 0);

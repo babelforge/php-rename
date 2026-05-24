@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Guard;
+namespace BabelForge\PhpRename\Infrastructure\MemberGraph\Guard;
 
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Request\RenameRequestInterface;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Request\RenameRequestInterface;
 
 /**
  * Reports rename requests that would not change the symbol name.

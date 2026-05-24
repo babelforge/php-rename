@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Infrastructure\MemberGraph\Planner;
+namespace BabelForge\PhpRename\Infrastructure\MemberGraph\Planner;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
-use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRename\Application\Contract\NestedCallableLocalVariableRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\NestedCallableRenamePlannerInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperationRole;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableContainerKind;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableKind;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableLocalVariableRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
-use PhpNoobs\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
+use BabelForge\PhpRename\Application\Contract\NestedCallableLocalVariableRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\NestedCallableRenamePlannerInterface;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperation;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperationCollection;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperationRole;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableContainerKind;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableKind;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableLocalVariableRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Request\NestedCallableRenameRequest;
+use BabelForge\PhpRename\Domain\Rename\Symbol\RenameSymbolKind;
 use PhpParser\Node;
 use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\ArrowFunction;

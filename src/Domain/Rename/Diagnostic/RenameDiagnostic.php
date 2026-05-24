@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Domain\Rename\Diagnostic;
+namespace BabelForge\PhpRename\Domain\Rename\Diagnostic;
 
 /**
  * Describes a rename planning or application diagnostic.

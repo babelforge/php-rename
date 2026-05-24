@@ -2,36 +2,36 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRename\Application;
+namespace BabelForge\PhpRename\Application;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
-use PhpNoobs\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\ClassRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\ConstantFqcnRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\ConstantRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\EnumCaseRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\MethodRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\NestedCallableLocalVariableRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\NestedCallableRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
-use PhpNoobs\PhpRename\Application\Contract\RenamePlanApplierInterface;
-use PhpNoobs\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
-use PhpNoobs\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
-use PhpNoobs\PhpRename\Domain\Rename\Operation\RenameOperation;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenamePlan;
-use PhpNoobs\PhpRename\Domain\Rename\Plan\RenameResult;
-use PhpNoobs\PhpRename\Domain\Rename\Step\RenameStepContext;
-use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
-use PhpNoobs\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
-use PhpNoobs\PhpRename\Infrastructure\PhpParser\Transaction\VirtualPhpSourceFileSnapshot;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\MemberGraph\Application\Build\Projection\MemberGraphBuildOverlay;
+use BabelForge\PhpRename\Application\Contract\ClassConstantRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\ClassFqcnRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\ClassRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\ConstantFqcnRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\ConstantRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\EnumCaseRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\FunctionFqcnRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\FunctionRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\MethodRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\NestedCallableLocalVariableRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\NestedCallableRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\ParameterRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\PropertyRenamePlannerInterface;
+use BabelForge\PhpRename\Application\Contract\RenamePlanApplierInterface;
+use BabelForge\PhpRename\Domain\Rename\Conflict\RenameConflictPolicy;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnostic;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticCollection;
+use BabelForge\PhpRename\Domain\Rename\Diagnostic\RenameDiagnosticSeverity;
+use BabelForge\PhpRename\Domain\Rename\Operation\RenameOperation;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenamePlan;
+use BabelForge\PhpRename\Domain\Rename\Plan\RenameResult;
+use BabelForge\PhpRename\Domain\Rename\Step\RenameStepContext;
+use BabelForge\PhpRename\Domain\Rename\Transaction\RenameTransactionResult;
+use BabelForge\PhpRename\Domain\Rename\Transaction\RenameTransactionStatus;
+use BabelForge\PhpRename\Infrastructure\PhpParser\Transaction\VirtualPhpSourceFileSnapshot;
 
 /**
  * Applies multiple rename actions against a refreshed in-memory member graph build.
