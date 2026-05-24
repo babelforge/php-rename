@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/babelforge/member-graph.git",
-                "reference": "ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1"
+                "reference": "6b91810d100ccaeaee86d546953e05c3f3848528"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/babelforge/member-graph/zipball/ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1",
-                "reference": "ab9a3ea9402b2be55cd1eda4c64ac36cc3a033c1",
+                "url": "https://api.github.com/repos/babelforge/member-graph/zipball/6b91810d100ccaeaee86d546953e05c3f3848528",
+                "reference": "6b91810d100ccaeaee86d546953e05c3f3848528",
                 "shasum": ""
             },
             "require": {
@@ -72,7 +72,7 @@
                 "source": "https://github.com/babelforge/member-graph/tree/main",
                 "issues": "https://github.com/babelforge/member-graph/issues"
             },
-            "time": "2026-05-24T15:11:30+00:00"
+            "time": "2026-05-24T15:48:47+00:00"
         },
         {
             "name": "babelforge/php-source-registry",
